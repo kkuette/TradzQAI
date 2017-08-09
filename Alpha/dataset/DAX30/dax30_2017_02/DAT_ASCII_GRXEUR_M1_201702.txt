@@ -1,0 +1,21 @@
+HistData.com (c) 2012
+File: DAT_ASCII_GRXEUR_M1_201702.csv Status Report
+
+Gap of 61s found between 20170201125055 and 20170201125203.
+Gap of 68s found between 20170203022633 and 20170203022747.
+Gap of 69s found between 20170203130945 and 20170203131101.
+Gap of 68s found between 20170203143247 and 20170203143402.
+Gap of 85s found between 20170203151453 and 20170203151625.
+Gap of 81s found between 20170207145505 and 20170207145633.
+Gap of 63s found between 20170208141120 and 20170208141229.
+Gap of 64s found between 20170209134905 and 20170209135016.
+Gap of 64s found between 20170209141012 and 20170209141123.
+Gap of 66s found between 20170210144900 and 20170210145012.
+Gap of 70s found between 20170210145217 and 20170210145333.
+Gap of 78s found between 20170213124944 and 20170213125108.
+Gap of 71s found between 20170213145412 and 20170213145529.
+Gap of 68s found between 20170213150319 and 20170213150434.
+Gap of 65s found between 20170227131530 and 20170227131641.
+
+Average tick interval: 4701 miliseconds.
+Maximum tick interval found: 85500 miliseconds.

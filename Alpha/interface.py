@@ -1,6 +1,5 @@
 from tkinter import *
-from core import *
-from parsing import parsing
+import tkinter.ttk as ttk
 
 class interface(Frame):
 
@@ -13,10 +12,17 @@ class interface(Frame):
         self.text = Text(window, width=100, height=100)
         self.text.insert(INSERT, self.name + " " + self.version)
         self.text.pack()
-        self.parsing = Button(self, text="Start parsing", command=parsing)
+        self.parsing = Button(self, text="Start parsing", command=self.set_pause)
         self.parsing.pack()
-        self.run_ai = Button(self, text="Run AI", command=run_ai)
+        self.run_ai = Button(self, text="Run AI", command=quit)
         self.run_ai.pack()
+        self.pause = True
+
+    def set_pause(self):
+        if self.set_pause is True:
+            self.pause = False
+        else:
+            self.pause = True
 
     def text_update(self, state):
         self.text.insert(END, "\n")
@@ -25,5 +31,8 @@ class interface(Frame):
 
 def launch_interface():
     window = Tk()
-    interface = interface(window)
-    return interface
+    interfaces = interface(window)
+    interfaces.mainloop()
+    return interfaces
+
+launch_interface()

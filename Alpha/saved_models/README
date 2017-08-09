@@ -1,0 +1,5 @@
+DAX30.HD5F -> trained on all dax dataset 20 epochs by year 50 epochs by mounth | dataset /= 1000 | 10 hidden | 128 - 64 - 16 - 1 | V_split : 0.2
+DAX30_2.HD5F -> trained on all dax dataset 20 epochs by year 50 epochs by mounth | dataset /= 10000 | 10 hidden | 128 - 64 - 16 - 1 | V_split : 0.2
+DAX30_3.HD5F -> trained on all dax dataset 20 epochs by year 50 epochs by mounth | dataset /= 10000 | 10 hidden | 256 - 128 - 16 - 1 | V_split : 0.1
+DAX30_4.HD5F -> trained on all dax dataset 20 epochs by year 50 epochs by mounth | dataset /= 1000 | 10 hidden | 256 - 128 - 16 - 1 | V_split : 0.1
+
