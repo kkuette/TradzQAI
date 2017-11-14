@@ -4,8 +4,8 @@ import tkinter.ttk as ttk
 class interface(Frame):
 
     def __init__(self, window, **kwargs):
-        self.name = "EasyMoney"
-        self.version = "v0.0"
+        self.name = "TradzQAI"
+        self.version = "Alpha v0.1"
         window.title(self.name + " " + self.version)
         Frame.__init__(self, window, **kwargs)
         self.pack(fill=BOTH)
