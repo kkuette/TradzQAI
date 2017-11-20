@@ -1,5 +1,6 @@
 from tkinter import *
 import tkinter.ttk as ttk
+import RNN
 
 class interface(Frame):
 
@@ -14,7 +15,7 @@ class interface(Frame):
         self.text.pack()
         self.parsing = Button(self, text="Start parsing", command=quit)
         self.parsing.pack()
-        self.run_ai = Button(self, text="Run AI", command=quit)
+        self.run_ai = Button(self, text="Run AI", command=RNN.full_run)
         self.run_ai.pack()
         self.pause = True
 
