@@ -1,6 +1,8 @@
 from tkinter import *
 import tkinter.ttk as ttk
 import RNN
+from tkinter.filedialog import *
+from tkinter.messagebox import *
 
 class interface(Frame):
 
@@ -17,7 +19,6 @@ class interface(Frame):
         self.parsing.pack()
         self.run_ai = Button(self, text="Run AI", command=RNN.full_run)
         self.run_ai.pack()
-        self.pause = True
 
     def text_update(self, state):
         self.text.insert(END, "\n")
@@ -29,5 +30,3 @@ def launch_interface():
     interfaces = interface(window)
     interfaces.mainloop()
     return interfaces
-
-launch_interface()
