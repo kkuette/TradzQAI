@@ -26,11 +26,11 @@ class Agent:
 
 	def _model(self):
 		model = Sequential()
-		model.add(Dense(units=64, input_dim=self.state_size))
+		model.add(Dense(units=128, input_dim=self.state_size))
 		model.add(PReLU())
-		model.add(Dense(units=32))
+		model.add(Dense(units=64))
 		model.add(PReLU())
-		model.add(Dense(units=8))
+		model.add(Dense(units=16))
 		model.add(PReLU())
 		model.add(Dense(self.action_size, activation="linear"))
 		model.compile(loss="mse", optimizer=Adam(lr=0.001))
