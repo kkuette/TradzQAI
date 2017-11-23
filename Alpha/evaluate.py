@@ -1,7 +1,7 @@
 import keras
 from keras.models import load_model
 
-from agent.agent import Agent
+from agent import Agent
 from functions import *
 import sys
 
