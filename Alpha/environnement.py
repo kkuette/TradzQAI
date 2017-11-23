@@ -11,7 +11,7 @@ class environnement():
         self.contract_price = 5
         self.max_order = 5
         self.spread = 1
-        self.window_size = 20
+        self.window_size = 50
         self.total_profit = 0
         self.reward = 0
         self.profit = 0
