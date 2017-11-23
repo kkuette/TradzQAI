@@ -20,6 +20,7 @@ class environnement():
         self.pause = 0
         self.corder = ""
         self.cdata = 0
+        self.cdatai = 0
         self.inventory = None
         self.POS_BUY = -1
         self.POS_SELL = -1
