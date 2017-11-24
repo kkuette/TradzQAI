@@ -24,3 +24,4 @@ class environnement():
         self.inventory = None
         self.POS_BUY = -1
         self.POS_SELL = -1
+        self.cd = 0 
