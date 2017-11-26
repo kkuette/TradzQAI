@@ -25,3 +25,5 @@ class environnement():
         self.POS_BUY = -1
         self.POS_SELL = -1
         self.cd = 0 
+        self.win = 0
+        self.loose_r = 0
