@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import matplotlib.pyplot as plt
 
 # prints formatted price
 def formatPrice(n):
@@ -20,7 +21,7 @@ def getStockDataVec(key):
         '''
         for l in range(len(row['Time'])):
             vec.append(row['Open'].iloc[l])
-            rsi.append(row['Volatility'].iloc[l])
+            rsi.append(row['RSI'].iloc[l])
 
         return vec, rsi
 
@@ -35,11 +36,13 @@ def getState(data, t, n, rsi):
         block_r = rsi[d:t + 1] if d >= 0 else -d * [rsi[0]] + rsi[0:t + 1] # pad with t0
         res = []
         for i in range(n - 1):
-            res.append(sigmoid(block[i + 1] - block[i])) #+ (block_r[i + 1] - block_r[i]))
+            res.append(sigmoid(block[i + 1] - block[i]) - sigmoid(block_r[i + 1] - block_r[i]))
+
 
         '''
-        res = sig(price_open) * Volatility ?
-        new = sig(res + sig(RSI)) ?
+        plt.plot(res, color='green', label='sig(data)')
+        plt.plot(res2, color='red', label='sig(data)*volatility')
+        plt.show()
         '''
 
         return np.array([res])
