@@ -27,3 +27,4 @@ class environnement():
         self.cd = 0 
         self.win = 0
         self.loose_r = 0
+        self.mode = ""
