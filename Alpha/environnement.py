@@ -6,10 +6,11 @@ class environnement():
         self.data_path = "./dataset/"
         self.period = 10
 
+        self.act = ""
         self.stock_name = ""
         self.episode_count = 100
         self.contract_price = 5
-        self.max_order = 5
+        self.max_order = 20
         self.spread = 1
         self.window_size = 50
         self.total_profit = 0
@@ -28,3 +29,11 @@ class environnement():
         self.win = 0
         self.loose_r = 0
         self.mode = ""
+
+    def def_act(self, act):
+        if act == 1:
+            self.act = "BUY"
+        elif act == 2:
+            self.act = "SELL"
+        else:
+            self.act = "HOLD"

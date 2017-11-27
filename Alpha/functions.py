@@ -13,14 +13,15 @@ def getStockDataVec(key):
         rsi = []
         path = "data/" + key + ".csv"
         lines = open(path, "r").read().splitlines()
-        names = ['ID', 'Time', 'Open', 'High', 'Low', 'Close', 'RSI', 'Volatility']
-        row = (pd.read_csv(path, error_bad_lines=False, sep=';', header= 0, names = names)).reset_index(drop=True)
+        #names = ['ID', 'Time', 'Open', 'High', 'Low', 'Close', 'RSI', 'Volatility']
+        names = ['Time', 'BID', 'RSI']
+        row = pd.read_csv(path, sep=';')#, names = names)
         '''
         for line in lines[1:]:
             vec.append(float(line.split(";")[4]))
         '''
-        for l in range(len(row['Time'])):
-            vec.append(row['Open'].iloc[l])
+        for l in range(len(row['BID'])):
+            vec.append(row['BID'].iloc[l])
             rsi.append(row['RSI'].iloc[l])
 
         return vec, rsi

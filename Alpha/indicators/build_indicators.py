@@ -22,9 +22,9 @@ class indicators():
         indicators = pd.DataFrame(columns = names)
         print ("Building RSI")
         indicators['RSI'] = RSI(data, self.rsi_period)
+        '''
         print ("Building Volatility")
         indicators['Volatility'] = vol(data, self.volatility_period)
-        '''
         print ("Building Stoch_D")
         indicators['Stoch_D'] = D(data, self.stoch_period)
         print ("Building Stoch_K")
