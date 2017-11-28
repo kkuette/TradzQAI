@@ -18,7 +18,7 @@ class indicators():
         self.volatility_period = 20
 
     def build_indicators(self, data):
-        names = ['RSI', 'Volatility']#, 'Stoch_D', 'Stock_K', 'EMA20', 'EMA50','EMA100']
+        names = ['RSI'] #, 'Volatility', 'Stoch_D', 'Stock_K', 'EMA20', 'EMA50','EMA100']
         indicators = pd.DataFrame(columns = names)
         print ("Building RSI")
         indicators['RSI'] = RSI(data, self.rsi_period)
