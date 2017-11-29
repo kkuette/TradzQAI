@@ -7,7 +7,7 @@ class environnement():
         self.period = 10
 
         self.act = ""
-        self.stock_name = ""
+        self.stock_name = "dax30_2011_01"
         self.episode_count = 100
         self.contract_price = 5
         self.max_order = 20
@@ -27,13 +27,37 @@ class environnement():
         self.POS_SELL = -1
         self.cd = 0 
         self.win = 0
-        self.loose_r = 0
+        self.loose = 0
         self.mode = ""
+
+        # List for graph building
+
+        ## Overview list
+
+        self.lst_order = []
+        self.lst_inventory_len = []
+        self.lst_profit = []
+        self.lst_data = []
+
+        ## model list
+
+        self.lst_act = []
+        self.lst_reward = []
+        self.lst_act_predit = []
+        self.lst_traget_predict = []
+        self.lst_target = []
+        self.lst_state = []
+        self.lst_epsilon = []
+
+        ## Historical list
 
     def def_act(self, act):
         if act == 1:
             self.act = "BUY"
+            self.lst_act.append(1)
         elif act == 2:
             self.act = "SELL"
+            self.lst_act.append(-1)
         else:
             self.act = "HOLD"
+            self.lst_act.append(0)
