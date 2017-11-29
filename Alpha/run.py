@@ -1,4 +1,4 @@
-from interface import *
+from GUI.interface import *
 from functions import *
 
 launch_interface()

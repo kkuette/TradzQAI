@@ -14,7 +14,7 @@ def getStockDataVec(key):
         path = "data/" + key + ".csv"
         lines = open(path, "r").read().splitlines()
         #names = ['ID', 'Time', 'Open', 'High', 'Low', 'Close', 'RSI', 'Volatility']
-        names = ['Time', 'BID', 'RSI']
+        names = ['Time', 'BID', 'RSI', 'MACD']
         row = pd.read_csv(path, sep=';')#, names = names)
         '''
         for line in lines[1:]:
@@ -22,7 +22,7 @@ def getStockDataVec(key):
         '''
         for l in range(len(row['BID'])):
             vec.append(row['BID'].iloc[l])
-            rsi.append(row['RSI'].iloc[l])
+            rsi.append(row['MACD'].iloc[l])
 
         return vec, rsi
 
@@ -37,7 +37,7 @@ def getState(data, t, n, rsi):
         block_r = rsi[d:t + 1] if d >= 0 else -d * [rsi[0]] + rsi[0:t + 1] # pad with t0
         res = []
         for i in range(n - 1):
-            res.append(sigmoid(block[i + 1] - block[i]))# - sigmoid(block_r[i + 1] - block_r[i]))
+            res.append(sigmoid(block_r[i + 1] - block_r[i]))
 
 
         '''
