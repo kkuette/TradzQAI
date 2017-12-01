@@ -7,12 +7,12 @@ class environnement():
         self.period = 10
 
         self.act = ""
-        self.stock_name = "dax30_2011_01"
+        self.stock_name = "dax30_2017_10"
         self.episode_count = 100
         self.contract_price = 5
         self.max_order = 20
         self.spread = 1
-        self.window_size = 50
+        self.window_size = 100
         self.total_profit = 0
         self.reward = 0
         self.profit = 0
@@ -26,9 +26,15 @@ class environnement():
         self.POS_BUY = -1
         self.POS_SELL = -1
         self.cd = 0 
+        self.co = ""
         self.win = 0
         self.loose = 0
+        self.draw = 0
         self.mode = ""
+
+        # Time var
+        self.start_t = 0
+        self.loop_t = 0
 
         # List for graph building
 

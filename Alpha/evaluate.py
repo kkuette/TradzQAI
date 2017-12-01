@@ -1,9 +1,10 @@
 import keras
 from keras.models import load_model
 
+import sys
+
 from agent import Agent
 from functions import *
-import sys
 
 if len(sys.argv) != 3:
 	print ("Usage: python evaluate.py [stock] [model]")
