@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+
 import matplotlib.pyplot as plt
 
 # prints formatted price
@@ -14,15 +15,16 @@ def getStockDataVec(key):
         path = "data/" + key + ".csv"
         lines = open(path, "r").read().splitlines()
         #names = ['ID', 'Time', 'Open', 'High', 'Low', 'Close', 'RSI', 'Volatility']
-        names = ['Time', 'BID', 'RSI', 'MACD']
-        row = pd.read_csv(path, sep=';')#, names = names)
+        #names = ['Time', 'Open', 'High', 'Low', 'Close', '']
+        names = ['ID', 'Time', 'BID', 'ASK', 'RSI']
+        row = pd.read_csv(path, sep=';', header=0, names=names)#, names = names)
         '''
         for line in lines[1:]:
             vec.append(float(line.split(";")[4]))
         '''
         for l in range(len(row['BID'])):
             vec.append(row['BID'].iloc[l])
-            rsi.append(row['MACD'].iloc[l])
+            rsi.append(row['Time'].iloc[l])
 
         return vec, rsi
 
@@ -37,7 +39,9 @@ def getState(data, t, n, rsi):
         block_r = rsi[d:t + 1] if d >= 0 else -d * [rsi[0]] + rsi[0:t + 1] # pad with t0
         res = []
         for i in range(n - 1):
-            res.append(sigmoid(block_r[i + 1] - block_r[i]))
+            #res.append(sigmoid(block_r[i + 1] - block_r[i]))
+
+            res.append(sigmoid(block[i + 1] - block[i]))
 
 
         '''
