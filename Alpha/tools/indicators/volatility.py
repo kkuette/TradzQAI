@@ -1,5 +1,5 @@
-from indicators.standard_deviation import standard_deviation as sd
-from indicators.standard_variance import standard_variance as sv
+from tools.indicators.standard_deviation import standard_deviation as sd
+from tools.indicators.standard_variance import standard_variance as sv
 import numpy as np
 
 np.seterr(divide='ignore', invalid='ignore')

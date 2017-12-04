@@ -1,5 +1,5 @@
-from indicators.catch_errors import check_for_period_error
-from indicators.exponential_moving_average import exponential_moving_average as ema
+from tools.indicators.catch_errors import check_for_period_error
+from tools.indicators.exponential_moving_average import exponential_moving_average as ema
 
 def moving_average_convergence_divergence(data, short_period, long_period):
     """

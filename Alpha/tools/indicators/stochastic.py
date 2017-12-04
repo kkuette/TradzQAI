@@ -1,7 +1,7 @@
 import numpy as np
-from indicators.catch_errors import check_for_period_error
-from indicators.function_helper import fill_for_noncomputable_vals
-from indicators.simple_moving_average import simple_moving_average as sma
+from tools.indicators.catch_errors import check_for_period_error
+from tools.indicators.function_helper import fill_for_noncomputable_vals
+from tools.indicators.simple_moving_average import simple_moving_average as sma
 
 np.seterr(divide='ignore', invalid='ignore')
 
