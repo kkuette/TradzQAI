@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
-from indicators.function_helper import fill_for_noncomputable_vals
-from indicators.catch_errors import check_for_period_error
+from tools.indicators.function_helper import fill_for_noncomputable_vals
+from tools.indicators.catch_errors import check_for_period_error
 
 
 def simple_moving_average(data, period):

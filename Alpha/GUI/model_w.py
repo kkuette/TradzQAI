@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 from matplotlib import style
 
 from GUI.interface import *
-from environnement import *
+from core.environnement import *
 
 style.use('ggplot')
 
