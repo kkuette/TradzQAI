@@ -1,36 +1,46 @@
-from tools.saver import *
-from core.environnement import *
+from tools.saver import saver
+
 import time
+
+from collections import deque
 
 class logger():
 
     def __init__(self, env):
 
-        # Init saver
-
-        self.saver = saver()
+        self.env = env
 
         # Init logger
 
         self.path = "logs/"
-        self.log_file = None
 
-        self.logs = ""
+        self.logs = deque(maxlen=5000)
         self.id = 0
 
-    def _start(self):
-        self.saver._check(env.stock_name, self.path)
-        self.saver._load()
+        self.current_index = 0
 
-    '''
-    def start_episode(self):
+        self.conf = ""
 
-    def start_day(self):
+        self.logs.append(time.strftime("%Y:%m:%d %H:%M:%S") + \
+                        " " + '{:010d}'.format(self.id) + " " \
+                        + str("Starting logs") + "\n")
+        self.id += 1
+    #def init_conf(self):
+    #def update_conf(self):
 
-    def end_episode(self):
+    def init_saver(self):
+        self.saver = self.env.saver
+        self._add("Saver initialized")
 
-    def end_day(self):
-    '''
-
-    def _end(self):
-        self.saver._end(self.logs)
+    def _add(self, log):
+        self.logs.append(time.strftime("%Y:%m:%d %H:%M:%S") + \
+            " " + '{:010d}'.format(self.id) + " " + str(log) + "\n")
+        if self.saver.log_file != None:
+            if self.current_index < self.id:
+                while self.current_index < self.id:
+                    self.saver._save(logs=self.logs[self.current_index])
+                    self.current_index += 1
+            else:
+                self.saver._save(logs=self.logs[self.id])
+                self.current_index += 1
+        self.id += 1
