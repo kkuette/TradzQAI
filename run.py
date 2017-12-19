@@ -1,5 +1,12 @@
-from GUI.interface import *
-from tools.utils import *
+from GUI import MainWindow
+
+from PyQt5.QtWidgets import QApplication
+
+import sys
 
 if __name__ == '__main__':
-    launch_interface()
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+    launch = MainWindow()
+    launch.show()
+    sys.exit(app.exec_())
