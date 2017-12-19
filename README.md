@@ -4,6 +4,10 @@ This project contains GUI for monitoring behaviour and/or backtesting trading ag
 
 TradZQAI has been inspired by q-trader, and indicators lib come from [pyti](https://github.com/kylejusticemagnuson/pyti)
 
+## Status
+
+    Alpha in development
+
 ## Getting Started
 
   All this project run with python 3
@@ -28,7 +32,7 @@ TradZQAI has been inspired by q-trader, and indicators lib come from [pyti](http
   
     change :   ```row_path = "../dataset/DAX30/1M", new_path = "./data/DAX30_full_wi.csv```
              
-    To :     ```row_path = "your_dataset_directory_path", new_path = "your_file.csv" ```
+    To :     ```row_path = "your_dataset_directory_path", new_path = "your_file_path.csv" ```
            
     and run : ```py build.py```
  
