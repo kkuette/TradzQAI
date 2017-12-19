@@ -7,6 +7,7 @@ import random
 from collections import deque
 
 class Agent:
+
     def __init__(self, state_size, env=None, is_eval=False, model_name=""):
         self.state_size = state_size # normalized previous days
         self.action_size = 3 # sit, buy, sell
@@ -19,13 +20,12 @@ class Agent:
 
         self.env = env
 
+        self.update_rate = 1e-1
+        self.learning_rate = 1e-3
         self.gamma = 0.95
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-
-        print (model_name)
-
 
     def act(self, state):
         if not self.is_eval and np.random.rand() <= self.epsilon:
@@ -34,19 +34,12 @@ class Agent:
         options = self.model.predict(state)
         return np.argmax(options[0])
 
-    def expReplay(self, batch_size):
-        mini_batch = []
-        l = len(self.memory)
-        for i in range(l - batch_size + 1, l):
-            mini_batch.append(self.memory[i])
+    def _save_model(self):
+        if "" in self.env.logger.model_file_name:
+            self.env.logger.model_file_path = self.env.logger.model_file_path \
+                      + self.name + "_" + self.env.stock_name
 
-        for state, action, reward, next_state, done in mini_batch:
-            target = reward
-            if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-            target_f = self.model.predict(state)
-            target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+        self.model.save(self.env.logger.model_file_path)
 
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay 
+    def _load_model(self):
+        self.model = self.env.logger._load()
