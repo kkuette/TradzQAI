@@ -1,5 +1,4 @@
-from GUI.main_window import *
-from tools.utils import *
+from GUI import MainWindow
 
 from PyQt5.QtWidgets import QApplication
 
@@ -11,4 +10,3 @@ if __name__ == '__main__':
     launch = MainWindow()
     launch.show()
     sys.exit(app.exec_())
-    #show()
