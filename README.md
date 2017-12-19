@@ -32,13 +32,12 @@ TradZQAI has been inspired by q-trader, and indicators lib come from [pyti](http
            
     and run : ```py build.py```
  
-## Relevant project :
+## Relevant project
   - [TradingBrain](https://github.com/Prediction-Machines/Trading-Brain)
   - [Keras-rl](https://github.com/matthiasplappert/keras-rl)
   - [q-trader](https://github.com/edwardhdlu/q-trader)
  
-## Sources :
-
+## Sources
   - https://arxiv.org/abs/1312.5602 for DQN
   - https://arxiv.org/abs/1509.06461 for DDQN
   - https://keon.io/deep-q-learning/
