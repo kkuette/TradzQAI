@@ -10,7 +10,6 @@ import numpy as np
 import random
 from collections import deque
 
-from core import environnement
 from .agent import Agent
 
 class DQN(Agent):
@@ -26,12 +25,12 @@ class DQN(Agent):
 
     def _model(self):
         model = Sequential()
-        model.add(Dense(32, input_shape=self.state_size.shape, activation='relu'))
+        model.add(Dense(32, input_dim=self.state_size.shape[1], activation='relu'))
         model.add(Dense(32, activation='relu'))
         model.add(Dense(self.action_size, activation="linear"))
         model.compile(loss="mse", optimizer=Adam(lr=self.learning_rate))
         return model
-    
+
     def expReplay(self, batch_size):
         mini_batch = []
         l = len(self.memory)

@@ -11,7 +11,6 @@ import numpy as np
 import random
 from collections import deque
 
-from core import environnement
 from .agent import Agent
 
 class DRQN(Agent):
@@ -27,7 +26,7 @@ class DRQN(Agent):
 
     def _model(self):
         model = Sequential()
-        model.add(Dense(32, input_shape=self.state_size.shape, activation='relu'))
+        model.add(Dense(32, input_dim=self.state_size.shape[1], activation='relu'))
         model.add(Dense(32, activation='relu'))
         model.add(Reshape((1, 32)))
         model.add(CuDNNLSTM(128))

@@ -28,7 +28,7 @@ class Logger(Saver):
     #def update_conf(self):
 
     def init_saver(self):
-        self._check(self.env.model_name, self.log_path)
+        self._check(self.env.model_dir, self.log_path)
         self._add("Saver initialized")
 
     def _add(self, log):
