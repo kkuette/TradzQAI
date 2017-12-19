@@ -1,6 +1,7 @@
 # TradzQAI
 
 This project contains GUI for monitoring behaviour and/or backtesting trading agent (or algorithms), some RL agent like DQN agent and indicators lib.
+
 TradZQAI has been inspired by q-trader, and indicators lib come from pyti
 
 ## Getting Started
