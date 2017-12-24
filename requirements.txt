@@ -1,0 +1,7 @@
+tensorflow-gpu
+keras
+PyQt5
+pyqtgraph
+pandas
+numpy
+qdarkstyle
