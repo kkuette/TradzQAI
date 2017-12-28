@@ -30,8 +30,9 @@ class DDQN(Agent):
 
     def _model(self):
         model = Sequential()
-        model.add(Dense(32, input_dim=self.state_size.shape[1], activation='relu'))
+        model.add(Dense(64, input_dim=self.state_size.shape[1], activation='relu'))
         model.add(Dense(32, activation='relu'))
+        model.add(Dense(8, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss="mse", optimizer=Adam(lr=self.learning_rate))
         return model
