@@ -15,9 +15,9 @@ from .agent import Agent
 
 class DDRQN(Agent):
 
-    def __init__(self, state_size, env=None, is_eval=False, model_name=""):
+    def __init__(self, state_size, env=None, is_eval=False):
         self.name = "DDRQN"
-        Agent.__init__(self, state_size, env=env, is_eval=is_eval, model_name=model_name)
+        Agent.__init__(self, state_size, env=env, is_eval=is_eval)
 
     def build_model(self):
         self._load_model()
