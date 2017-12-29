@@ -1,12 +1,17 @@
 # TradzQAI
 
-This project contains GUI for monitoring behaviour and/or backtesting trading agent (or algorithms), some RL agent like DQN agent and indicators lib.
+This project contains GUI for monitoring behaviour and/or backtesting trading agent (or algorithms), and some RL agent like DQN agent.
 
-TradZQAI has been inspired by q-trader, and indicators lib come from [pyti](https://github.com/kylejusticemagnuson/pyti)
+TradzQAI has been inspired by q-trader.
+Indicators lib come from [pyti](https://github.com/kylejusticemagnuson/pyti)
+
+More datasets available [here](http://www.histdata.com/download-free-forex-data/?/ascii/1-minute-bar-quotes)
 
 ## Status
 
     Alpha in development
+        Working agent : DQN, DDQN, DRQN, DDRQN
+        Not working agent : EIIE, DDPG
 
 ## Getting Started
 
@@ -41,7 +46,10 @@ TradZQAI has been inspired by q-trader, and indicators lib come from [pyti](http
   - [Keras-rl](https://github.com/matthiasplappert/keras-rl)
   - [q-trader](https://github.com/edwardhdlu/q-trader)
  
-## Sources
-  - https://arxiv.org/abs/1312.5602 for DQN
-  - https://arxiv.org/abs/1509.06461 for DDQN
+## References
+  - [DQN](https://arxiv.org/abs/1312.5602)
+  - [DRQN](https://arxiv.org/abs/1507.06527)
+  - [DDQN](https://arxiv.org/abs/1509.06461)
+  - [DDPG](https://arxiv.org/abs/1509.02971)
+  - [EIIE](https://arxiv.org/abs/1706.10059) [Official code for paper](https://github.com/ZhengyaoJiang/PGPortfolio)
   - https://keon.io/deep-q-learning/
