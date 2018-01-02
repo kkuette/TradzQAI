@@ -6,10 +6,9 @@ from collections import deque
 
 class Logger(Saver):
 
-    def __init__(self, env):
+    def __init__(self):
 
         Saver.__init__(self)
-        self.env = env
 
         self.log_path = "logs/"
 
@@ -25,10 +24,12 @@ class Logger(Saver):
                         + str("Starting logs") + "\n")
         self.id += 1
     #def init_conf(self):
-    #def update_conf(self):
+    
+    def update_conf(self, env):
+        pass
 
-    def init_saver(self):
-        self._check(self.env.model_dir, self.log_path)
+    def init_saver(self, env):
+        self._check(env.model_dir, self.log_path)
         self._add("Saver initialized")
 
     def _add(self, log):
@@ -36,7 +37,7 @@ class Logger(Saver):
             " " + '{:010d}'.format(self.id) + " " + str(log) + "\n")
         if self.log_file != None:
             if self.current_index < self.id:
-                while self.current_index < self.id:
+                while self.current_index <= self.id:
                     self._save(logs=self.logs[self.current_index])
                     self.current_index += 1
             else:
