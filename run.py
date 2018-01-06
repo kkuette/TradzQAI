@@ -1,6 +1,11 @@
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QApplication
 
+import os
+
+# Hide TF loading logs
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import qdarkstyle
 
 from GUI import MainWindow
