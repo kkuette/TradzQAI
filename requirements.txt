@@ -4,4 +4,5 @@ PyQt5
 pyqtgraph
 pandas
 numpy
+h5py
 qdarkstyle
