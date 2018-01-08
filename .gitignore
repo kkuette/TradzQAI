@@ -1,4 +1,4 @@
 *.pyc
 *.cfg
 *.h5
-*.txt
+logs*.txt
