@@ -30,7 +30,10 @@ class EIIE(Agent):
             self.model = self._model()
 
     def _model(self):
-        # Need 3D shape
+        ''' Need 3D shape
+        Tensor with shape (window size, nb_features(should be one,
+        can be value + indics, 3 or more (close, high, low))) '''
+        
         model = Sequential()
         model.add(Conv2D(3, kernel_size=(1, 3), padding='same', activation='relu', input_shape=self.state_size.shape))
         model.add(Conv2D(2, kernel_size=(1, 48), padding='same', activation='relu'))
