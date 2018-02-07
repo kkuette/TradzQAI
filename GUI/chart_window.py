@@ -8,11 +8,7 @@ from PyQt5.QtCore import *
 
 import pyqtgraph as pg
 
-class Chart_Window(QWidget):
+class ChartWindow(QWidget):
 
-    def __init__(self):
-        super(QWidget, self). __init__()
-        self.candlestick = CandlestickItem()
-
-    def update_chart(self, env) :
-        self.candlestick.setData()
+    def __init__(self, root):
+        super(QWidget, self).__init__(root)
