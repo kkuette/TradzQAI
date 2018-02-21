@@ -25,8 +25,12 @@ class DRQN(Agent):
             self.model = self._model()
 
     def _model(self):
+        if len(self.state_size.shape) == 1:
+            input = 1
+        else:
+            input = self.state_size.shape[1]
         model = Sequential()
-        model.add(Dense(64, input_dim=self.state_size.shape[1], activation='relu'))
+        model.add(Dense(64, input_dim=input, activation='relu'))
         model.add(Dense(32, activation='relu'))
         model.add(Reshape((1, 32)))
         model.add(CuDNNLSTM(128))
