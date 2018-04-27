@@ -31,6 +31,10 @@ if __name__ == '__main__':
         from core import Local_Worker
 
         env = Environnement()
+        if env.mode == 1:
+            env.mode = "eval"
+        else:
+            env.mode = "train"
         env.gui = 0
         worker = Local_Worker(env)
         worker.run()
