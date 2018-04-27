@@ -6,3 +6,4 @@ pandas
 numpy
 h5py
 qdarkstyle
+tqdm
