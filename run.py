@@ -12,7 +12,7 @@ args = parser.parse_args()
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Set cpu
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 if __name__ == '__main__':
     if args.GUI == 1:
