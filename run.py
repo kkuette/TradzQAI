@@ -2,19 +2,21 @@ import os
 import sys
 
 import argparse
-parser = argparse.ArgumentParser(description="TradzQAI, all model configuration are in conf.cfg")
-parser.add_argument("-g", "--GUI", type=int, help="Display GUI, default not displaying", default=0, choices=[0, 1])
-parser.add_argument("-v", "--verbose", type=int, help="Verbosity mode, default is not verbose", default=0, choices=[0, 1])
-parser.add_argument("-m", "--mode", type=int, help="Training or eval mode, default is training. Uselfull only without GUI displayed", default=0, choices=[0, 1])
-args = parser.parse_args()
 
 # Hide TF loading logs
-#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Set cpu
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="TradzQAI, all model configuration are in conf.cfg")
+    parser.add_argument("-g", "--GUI", type=int, help="Display GUI, default not displaying", default=0, choices=[0, 1])
+    parser.add_argument("-v", "--verbose", type=int, help="Verbosity mode, default is not verbose", default=0, choices=[0, 1])
+    parser.add_argument("-m", "--mode", type=int, help="Training or eval mode, default is training. Uselfull only without GUI displayed", default=0, choices=[0, 1])
+    args = parser.parse_args()
+
     if args.GUI == 1:
         import qdarkstyle
         from PyQt5 import QtGui
@@ -26,15 +28,16 @@ if __name__ == '__main__':
         launch = MainWindow()
         launch.show()
         sys.exit(app.exec_())
+
     else:
         from environnement import Environnement
         from core import Local_Worker
 
-        env = Environnement()
+        env = Environnement(0)
         if env.mode == 1:
             env.mode = "eval"
+            env.episode_count = 1
         else:
             env.mode = "train"
-        env.gui = 0
         worker = Local_Worker(env)
-        worker.run()
+        worker.run(env)
