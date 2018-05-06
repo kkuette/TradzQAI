@@ -34,10 +34,10 @@ if __name__ == '__main__':
         from core import Local_Worker
 
         env = Environnement(0)
-        if env.mode == 1:
+        if args.mode == 1:
             env.mode = "eval"
-            env.episode_count = 1
         else:
             env.mode = "train"
         worker = Local_Worker(env)
         worker.run(env)
+        sys.exit(0)
