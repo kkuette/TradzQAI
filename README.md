@@ -23,7 +23,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   - tqdm
   - h5py
 
-  - Installation :
+  ### Installation :
     ```pip install -r requirements.txt```
 
 - Running the project
