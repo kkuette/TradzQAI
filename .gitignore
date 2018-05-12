@@ -1,4 +1,4 @@
 *.pyc
 *.cfg
-*.csv
-save/*
+*.h5
+logs*.txt
