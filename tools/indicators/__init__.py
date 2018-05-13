@@ -1,1 +1,1 @@
-from .build_indicators import indicators
+from .build_indicators import Indicators
