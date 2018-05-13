@@ -5,32 +5,22 @@ import pandas as pd
 
 class DQN(DQNAgent):
 
-    def __init__(self, state_size, env=None, is_eval=False):
+    def __init__(self, env=None, device=None):
 
-        self.state_size = state_size
         self.action_size = 3
-        self._memory_size = 1000
-        self._memory = deque(maxlen=1000)
-        self.is_eval = is_eval
         self.env = env
 
-
         DQNAgent.__init__(self,
-                           states = dict(type='float', shape=self.state_size.shape),
+                           states = dict(type='float', shape=env.state.shape),
                            actions = dict(type='int', num_actions=self.action_size),
                            network = env.get_network(),
                            discount = env.hyperparameters['gamma'],
+                           device=device,
                            batching_capacity = 10000,
                            double_q_model = True,
                            actions_exploration = env.exploration)
 
         self._load_model()
-
-    def build_model(self):
-        pass
-
-    def expReplay(self, reward, done):
-        self.observe(reward=reward, terminal=done)
 
     def _save_model(self):
         if self.env.logger.model_file_name == "":
