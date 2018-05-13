@@ -1,23 +1,26 @@
 import os
 import sys
+import time
 
 import argparse
 
 # Hide TF loading logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# Set cpu
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+agent = "PPO"
+device = '/cpu:0'
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="TradzQAI, all model configuration are in conf.cfg")
-    parser.add_argument("-g", "--GUI", type=int, help="Display GUI, default not displaying", default=0, choices=[0, 1])
-    parser.add_argument("-v", "--verbose", type=int, help="Verbosity mode, default is not verbose", default=0, choices=[0, 1])
-    parser.add_argument("-m", "--mode", type=int, help="Training or eval mode, default is training. Uselfull only without GUI displayed", default=0, choices=[0, 1])
+    parser.add_argument("-g", "--gui", type=str, help="Display gui, default not displaying", default='off', choices=['on', 'off'])
+    parser.add_argument("-v", "--verbose", type=int, help="Verbosity mode, default : 0", default=0, choices=[0, 1])
+    parser.add_argument("-m", "--mode", type=str, help="Training or eval mode, default is training. Uselfull only without gui displayed", default='train', choices=['train', 'eval'])
+    parser.add_argument("-s", "--session", type=str, help="Session live or local. Default local", default='local', choices=['local', 'live'])
     args = parser.parse_args()
 
-    if args.GUI == 1:
+    if 'on' in args.gui:
+        raise NotImplementedError
         import qdarkstyle
         from PyQt5 import QtGui
         from PyQt5.QtWidgets import QApplication
@@ -30,14 +33,12 @@ if __name__ == '__main__':
         sys.exit(app.exec_())
 
     else:
-        from environnement import Environnement
-        from core import Local_Worker
-
-        env = Environnement(0)
-        if args.mode == 1:
-            env.mode = "eval"
+        if "local" in args.session:
+            from core import Local_session as Session
         else:
-            env.mode = "train"
-        worker = Local_Worker(env)
-        worker.run(env)
+            from core import Live_session as Session
+        session = Session(mode=args.mode)
+        session.setAgent(agent="TRPO")
+        session.loadSession()
+        session.start()
         sys.exit(0)
