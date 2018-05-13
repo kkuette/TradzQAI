@@ -1,4 +1,6 @@
 *.pyc
 *.cfg
 *.csv
+*.sh
+todo.txt
 save/*
