@@ -5,6 +5,7 @@ from threading import Thread
 class Live_session(Thread):
 
     def __init__(self, gui, contract_type, db=None):
+        raise NotImplementedError
         self.db = db
         self.env = Live_env(gui, contract_type)
         self.agent = None
