@@ -1,13 +1,14 @@
-from core.worker import Live_Worker
-from core.environnement import Live_env
+from core import Live_Worker
+from core import Live_env
 from threading import Thread
+import keyboard
 
 class Live_session(Thread):
 
     def __init__(self, mode="train", gui=0, contract_type="classic", db=None):
-        raise NotImplementedError("Live session isnt ready yet")
+        #raise NotImplementedError("Live session isnt ready yet")
         self.db = db
-        self.env = Live_env(gui, contract_type)
+        self.env = Live_env(mode, gui, contract_type)
         self.agent = None
         self.worker = Live_Worker
         self.env.stop = False

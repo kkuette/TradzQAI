@@ -38,7 +38,7 @@ if __name__ == '__main__':
         else:
             from core import Live_session as Session
         session = Session(mode=args.mode)
-        session.setAgent(agent="TRPO")
+        session.setAgent()
         session.loadSession()
         session.start()
         sys.exit(0)
