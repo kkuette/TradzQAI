@@ -1,5 +1,5 @@
-from core.worker import Local_Worker
-from core.environnement import Local_env
+from core import Local_Worker
+from core import Local_env
 from threading import Thread
 import keyboard
 
@@ -37,7 +37,6 @@ class Local_session(Thread):
                 self.device = device
         else:
             raise ValueError('could not import %s' %self. env.model_name)
-
 
     def loadSession(self):
         self.initAgent()
