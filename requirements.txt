@@ -8,3 +8,4 @@ qdarkstyle
 tqdm
 deepdiff
 tensorforce[gpu]
+keyboard
