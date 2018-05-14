@@ -2,13 +2,16 @@ from core import Live_Worker
 from core import Live_env
 from threading import Thread
 import keyboard
+import datetime
 
 class Live_session(Thread):
 
     def __init__(self, mode="train", gui=0, contract_type="classic", db=None):
         #raise NotImplementedError("Live session isnt ready yet")
+
         self.db = db
         self.env = Live_env(mode, gui, contract_type)
+        self.env.exec_time = datetime.datetime.now()
         self.agent = None
         self.worker = Live_Worker
         self.env.stop = False
