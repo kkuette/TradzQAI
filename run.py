@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-
+import datetime
 import argparse
 
 # Hide TF loading logs
@@ -41,4 +41,5 @@ if __name__ == '__main__':
         session.setAgent()
         session.loadSession()
         session.start()
+
         sys.exit(0)

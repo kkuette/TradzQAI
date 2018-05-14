@@ -22,8 +22,11 @@ class NAF(NAFAgent):
 
     def _save_model(self):
         if self.env.logger.model_file_name == "":
-            self.env.logger.model_file_name = self.env.model_name + "_" + self.env.stock_name
-            self.env.logger.model_file_path += self.env.logger.model_file_name
+            try:
+                self.env.logger.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
+            except:
+                self.env.logger.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
+            self.env.logger.model_file_path = self.env.logger.model_directory + "/" + self.env.logger.model_file_name
         self.save_model(directory=self.env.logger.model_file_path, append_timestep=True)
 
     def _load_model(self):
