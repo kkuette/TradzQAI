@@ -1,36 +1,53 @@
-from tensorforce.agents import NAFAgent
+from .agent import Agent
 
-from collections import deque
-import pandas as pd
-
-class NAF(NAFAgent):
+class NAF(Agent):
 
     def __init__(self, env=None, device=None):
-        self.action_size = 3
-        self.env = env
+        Agent.__init__(self, env=env, device=device)
 
-        NAFAgent.__init__(self,
-                           states=dict(type='float', shape=env.state.shape),
-                           actions=dict(type='int', num_actions=self.action_size),
-                           network=env.settings['network'],
-                           device=device,
-                           batching_capacity=env.batch_size * 100,
-                           learning_rate=env.hyperparameters['learning_rate'],
-                           discount=env.hyperparameters['gamma'])
+    def get_specs(env=None):
+        specs = {
+            "type": "naf_agent",
 
-        self._load_model()
+            "update_mode": {
+                "unit": "timesteps",
+                "batch_size": 64,
+                "frequency": 4
+            },
 
-    def _save_model(self):
-        if self.env.saver.model_file_name == "":
-            try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
-            except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
-        self.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
+            "memory": {
+                "type": "replay",
+                "capacity": 10000,
+                "include_next_states": True
+            },
 
-    def _load_model(self):
-        try:
-            self.restore_model(self.env.logger.model_direct)
-        except:
-            pass
+            "optimizer": {
+                "type": "adam",
+                "learning_rate": 1e-3
+            },
+
+            "discount": 0.99,
+            "entropy_regularization": False,
+            "double_q_model": True,
+
+            "target_sync_frequency": 1000,
+            "target_update_weight": 1.0,
+
+            "actions_exploration": {
+                "type": "ornstein_uhlenbeck",
+                "sigma": 0.2,
+                "mu": 0.0,
+                "theta": 0.15
+            },
+
+            "saver": {
+                "directory": None,
+                "seconds": 600
+            },
+
+            "summarizer": {
+                "directory": None,
+                "labels": [],
+                "seconds": 120
+            }
+        }

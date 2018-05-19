@@ -1,36 +1,50 @@
-from tensorforce.agents import TRPOAgent
+from .agent import Agent
 
-from collections import deque
-import pandas as pd
-
-class TRPO(TRPOAgent):
+class TRPO(Agent):
 
     def __init__(self, env=None, device=None):
-        self.action_size = 3
-        self.env = env
+        Agent.__init__(self, env=env, device=device)
 
-        TRPOAgent.__init__(self,
-                           states = dict(type='float', shape=env.state.shape),
-                           actions = dict(type='int', num_actions=self.action_size),
-                           network = env.settings['network'],
-                           device = device,
-                           discount = env.hyperparameters['gamma'],
-                           batching_capacity = env.batch_size * 100,
-                           learning_rate = env.hyperparameters['learning_rate'])
+    def get_specs(env=None):
+        specs = {
+            "type": "trpo_agent",
 
-        self._load_model()
+            "update_mode": {
+                "unit": "episodes",
+                "batch_size": 20,
+                "frequency": 20
+            },
 
-    def _save_model(self):
-        if self.env.saver.model_file_name == "":
-            try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
-            except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
-        self.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
+            "memory": {
+                "type": "latest",
+                "include_next_states": False,
+                "capacity": 5000
+            },
 
-    def _load_model(self):
-        try:
-            self.restore_model(self.env.logger.model_directory)
-        except:
-            pass
+            "learning_rate": 1e-2,
+
+            "discount": 0.99,
+            "entropy_regularization": None,
+            "gae_lambda": None,
+            "likelihood_ratio_clipping": None,
+
+            "baseline_mode": None,
+            "baseline":  None,
+            "baseline_optimizer": None,
+
+            "saver": {
+                "directory": None,
+                "seconds": 600
+            },
+
+            "summarizer": {
+                "directory": None,
+                "labels": [],
+                "seconds": 120
+            },
+            "execution": {
+                "type": "single",
+                "session_config": None,
+                "distributed_spec": None
+            }
+        }

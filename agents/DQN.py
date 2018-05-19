@@ -1,38 +1,63 @@
-from tensorforce.agents import DQNAgent
+from .agent import Agent
 
-from collections import deque
-import pandas as pd
-
-class DQN(DQNAgent):
+class DQN(Agent):
 
     def __init__(self, env=None, device=None):
+        Agent.__init__(self, env=env, device=device)
 
-        self.action_size = 3
-        self.env = env
+    def get_specs(env=None):
+        specs = {
+            "type": "dqn-nstep_agent",
 
-        DQNAgent.__init__(self,
-                           states = dict(type='float', shape=env.state.shape),
-                           actions = dict(type='int', num_actions=self.action_size),
-                           network = env.settings['network'],
-                           discount = env.hyperparameters['gamma'],
-                           device=device,
-                           batching_capacity = 10000,
-                           double_q_model = True,
-                           actions_exploration = env.exploration)
+            "update_mode": {
+                "unit": "timesteps",
+                "batch_size": 64,
+                "frequency": 4
+            },
 
-        self._load_model()
+            "memory": {
+                "type": "replay",
+                "capacity": 10000,
+                "include_next_states": True
+            },
 
-    def _save_model(self):
-        if self.env.saver.model_file_name == "":
-            try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
-            except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
-        self.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
+            "optimizer": {
+                "type": "clipped_step",
+                "clipping_value": 0.1,
+                "optimizer": {
+                    "type": "adam",
+                    "learning_rate": 1e-3
+                }
+            },
 
-    def _load_model(self):
-        try:
-            self.restore_model(self.env.logger.model_directory)
-        except:
-            pass
+            "discount": 0.99,
+            "entropy_regularization": None,
+            "double_q_model": True,
+
+            "target_sync_frequency": 1000,
+            "target_update_weight": 1.0,
+
+            "actions_exploration": {
+                "type": "epsilon_anneal",
+                "initial_epsilon": 0.5,
+                "final_epsilon": 0.0,
+                "timesteps": 10000
+            },
+
+            "saver": {
+                "directory": None,
+                "seconds": 600
+            },
+
+            "summarizer": {
+                "directory": None,
+                "labels": [],
+                "seconds": 120
+            },
+
+            "execution": {
+                "type": "single",
+                "session_config": None,
+                "distributed_spec": None
+                }
+            }
