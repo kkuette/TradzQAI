@@ -11,6 +11,7 @@ class CFD(object):
         self.contract_settings = dict(
             pip_value = 5,
             contract_price = 125,
+            contract_size = 1,
             spread = 1,
             allow_short = True
         )
