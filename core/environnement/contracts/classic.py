@@ -6,9 +6,13 @@ class Classic(object):
         self.wallet = Wallet()
         self.inventory = Inventory()
 
+        self.wallet.settings['fee'] = 0.3
+        self.wallet.risk_managment['max_pos'] = 1
+
         self.contract_settings = dict(
             pip_value = 1,
             contract_price = 0,
+            contract_size = 1,
             spread = 0.1,
             allow_short = False
         )
@@ -17,7 +21,7 @@ class Classic(object):
         return price
 
     def calcBidnAsk(self, price):
-        return price - self.contract_settings['spread'] / 2, price + self.contract_settings['spread'] / 2
+        return (price - self.contract_settings['spread'] / 2), (price + self.contract_settings['spread'] / 2)
 
     def calcSpread(self, bid, ask):
         return ask - bid
