@@ -1,35 +1,65 @@
-from tensorforce.agents import VPGAgent
+from .agent import Agent
 
-from collections import deque
-import pandas as pd
-
-class VPG(VPGAgent):
+class VPG(Agent):
 
     def __init__(self, env=None, device=None):
-        self.action_size = 3
-        self.env = env
+        Agent.__init__(self, env=env, device=device)
 
-        VPGAgent.__init__(self,
-                           states=dict(type='float', shape=env.state.shape),
-                           actions=dict(type='int', num_actions=self.action_size),
-                           network=env.settings['network'],
-                           device=device,
-                           learning_rate=env.hyperparameters['learning_rate'],
-                           discount=env.hyperparameters['gamma'])
+    def get_specs(env=None):
+        specs = {
+            "type": "vpg_agent",
 
-        self._load_model()
+            "update_mode": {
+                "unit": "episodes",
+                "batch_size": 20,
+                "frequency": 20
+            },
 
-    def _save_model(self):
-        if self.env.saver.model_file_name == "":
-            try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
-            except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
-        self.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
+            "memory": {
+                "type": "latest",
+                "include_next_states": False,
+                "capacity": 5000
+            },
 
-    def _load_model(self):
-        try:
-            self.restore_model(self.env.logger.model_direct)
-        except:
-            pass
+            "optimizer": {
+                "type": "adam",
+                "learning_rate": 2e-2
+            },
+
+            "discount": 0.99,
+            "entropy_regularization": None,
+            "gae_lambda": None,
+
+            "baseline_mode": "states",
+
+            "baseline": {
+                "type": "mlp",
+                "sizes": [32, 32]
+            },
+
+            "baseline_optimizer": {
+                "type": "multi_step",
+                "optimizer": {
+                    "type": "adam",
+                    "learning_rate": 1e-3
+                    },
+                "num_steps": 5
+            },
+
+            "saver": {
+                "directory": None,
+                "seconds": 600
+            },
+
+            "summarizer": {
+                "directory": None,
+                "labels": [],
+                "seconds": 120
+            },
+
+            "execution": {
+                "type": "single",
+                "session_config": None,
+                "distributed_spec": None
+            }
+        }

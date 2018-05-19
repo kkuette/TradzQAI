@@ -1,37 +1,74 @@
-from tensorforce.agents import DDPGAgent
+from .agent import Agent
 
-from collections import deque
-import pandas as pd
-
-class DDPG(DDPGAgent):
+class DDPG(Agent):
 
     def __init__(self, env=None, device=None):
-        self.action_size = 3
-        self.env = env
+        Agent.__init__(self, env=env, device=device)
 
-        DDPGAgent.__init__(self,
-                           states = dict(type='float', shape=env.state.shape),
-                           actions = dict(type='int', num_actions=self.action_size),
-                           network = env.settings['network'],
-                           critic_network = env.get_network(),
-                           device=device,
-                           discount = env.hyperparameters['gamma'],
-                           batching_capacity = 10000,
-                           actions_exploration = env.exploration)
+    def get_specs(env=None):
+        specs = {
+            "type": "ddpg_agent",
 
-        self._load_model()
+            "update_mode": {
+                "unit": "timesteps",
+                "batch_size": env.batch_size,
+                "frequency": 64
+            },
 
-    def _save_model(self):
-        if self.env.saver.model_file_name == "":
-            try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
-            except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
-        self.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
+            "states_preprocessing":{
+                "type":"flatten",
+                "shape":env.state.shape
+            },
 
-    def _load_model(self):
-        try:
-            self.restore_model(self.env.logger.model_directory)
-        except:
-            pass
+            "memory": {
+                "type": "replay",
+                "capacity": 100000,
+                "include_next_states": True
+            },
+
+            "optimizer": {
+                "type": "adam",
+                "learning_rate": 1e-4
+            },
+
+            "discount": 0.99,
+            "entropy_regularization": None,
+
+            "critic_network": {
+                "size_t0": 64,
+                "size_t1": 64
+            },
+
+            "critic_optimizer": {
+                "type": "adam",
+                "learning_rate": 1e-3
+            },
+
+            "target_sync_frequency": 1,
+            "target_update_weight": 0.999,
+
+            "actions_exploration": {
+                "type": "ornstein_uhlenbeck",
+                "sigma": 0.3,
+                "mu": 0.0,
+                "theta": 0.15
+            },
+
+            "saver": {
+                "directory": None,
+                "seconds": 600
+            },
+
+            "summarizer": {
+                "directory": None,
+                "labels": [],
+                "seconds": 120
+            },
+
+            "execution": {
+                "type": "single",
+                "session_config": None,
+                "distributed_spec": None
+            }
+        }
+        return specs
