@@ -61,3 +61,4 @@ class DQN(Agent):
                 "distributed_spec": None
                 }
             }
+        return specs
