@@ -3,3 +3,10 @@
 *.sh
 save/*
 config/*
+
+test*
+tf.py
+todo.txt
+API/*
+order.py
+reward.py
