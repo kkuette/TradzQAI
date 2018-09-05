@@ -11,13 +11,12 @@ class DDPG(Agent):
 
             "update_mode": {
                 "unit": "timesteps",
-                "batch_size": env.batch_size,
+                "batch_size": 10000,
                 "frequency": 64
             },
 
             "states_preprocessing":{
-                "type":"flatten",
-                "shape":env.state.shape
+                "type":"flatten"
             },
 
             "memory": {

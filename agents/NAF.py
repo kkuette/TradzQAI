@@ -51,3 +51,4 @@ class NAF(Agent):
                 "seconds": 120
             }
         }
+        return specs
