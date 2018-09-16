@@ -20,6 +20,7 @@ class Agent(object):
                 device=device
             )
         )
+
         try:
             self.agent.restore_model(self.env.saver.model_directory)
         except:
