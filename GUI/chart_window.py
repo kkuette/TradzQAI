@@ -1,4 +1,3 @@
-from environnement import Environnement
 from candlestick import CandlestickItem
 
 import PyQt5
