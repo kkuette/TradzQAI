@@ -7,12 +7,16 @@ class DQN(Agent):
 
     def get_specs(env=None):
         specs = {
-            "type": "dqn-nstep_agent",
+            "type": "dqn_agent",
+
+            "states_preprocessing": {
+                "type":"flatten"
+            },
 
             "update_mode": {
                 "unit": "timesteps",
-                "batch_size": 64,
-                "frequency": 4
+                "batch_size": 32,
+                "frequency": 1
             },
 
             "memory": {
@@ -30,16 +34,12 @@ class DQN(Agent):
                 }
             },
 
-            "discount": 0.99,
+            "discount": 0.97,
             "entropy_regularization": None,
-            "double_q_model": True,
-
-            "target_sync_frequency": 1000,
-            "target_update_weight": 1.0,
 
             "actions_exploration": {
-                "type": "epsilon_anneal",
-                "initial_epsilon": 0.5,
+                "type": "epsilon_decay",
+                "initial_epsilon": 1.0,
                 "final_epsilon": 0.0,
                 "timesteps": 10000
             },
@@ -53,12 +53,6 @@ class DQN(Agent):
                 "directory": None,
                 "labels": [],
                 "seconds": 120
-            },
-
-            "execution": {
-                "type": "single",
-                "session_config": None,
-                "distributed_spec": None
-                }
+            }
             }
         return specs
