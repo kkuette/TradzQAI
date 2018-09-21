@@ -6,9 +6,9 @@ class Agent(object):
         self.env = env
         if self.env.saver.model_file_name == "":
             try:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0] + "_" + self.env.stock_name.split("_")[1]
+                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.dataDirectory.replace("/", "")
             except:
-                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.stock_name.split("_")[0]
+                self.env.saver.model_file_name = self.env.model_name + "_" + self.env.dataDirectory.replace("/", "")
             self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
 
         self.agent = Agents.from_spec(
