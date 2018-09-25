@@ -13,6 +13,12 @@ class PPO(Agent):
                 "type":"flatten"
             },
 
+            "subsampling_fraction": 0.1,
+            "optimization_steps": 50,
+            "entropy_regularization": 0.01,
+            "gae_lambda": None,
+            "likelihood_ratio_clipping": 0.2,
+
             "actions_exploration":{
                 "type": "epsilon_decay",
                 "initial_epsilon": 1.0,
