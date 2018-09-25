@@ -1,4 +1,5 @@
 from tensorforce.agents import Agent as Agents
+import os
 
 class Agent(object):
 
@@ -9,7 +10,9 @@ class Agent(object):
                 self.env.saver.model_file_name = self.env.model_name + "_" + self.env.dataDirectory.replace("/", "")
             except:
                 self.env.saver.model_file_name = self.env.model_name + "_" + self.env.dataDirectory.replace("/", "")
-            self.env.saver.model_file_path = self.env.saver.model_directory + "/" + self.env.saver.model_file_name
+            if not os.path.exists(self.env.saver.model_directory+ "/model"):
+                os.mkdir(self.env.saver.model_directory+ "/model")
+            self.env.saver.model_file_path = self.env.saver.model_directory + "/model/" + self.env.saver.model_file_name
 
         self.agent = Agents.from_spec(
             self.env.settings['agent'],
@@ -22,7 +25,7 @@ class Agent(object):
         )
 
         try:
-            self.agent.restore_model(self.env.saver.model_directory)
+            self.agent.restore_model(self.env.saver.model_directory+"/model")
         except:
             pass
 
