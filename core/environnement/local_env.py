@@ -51,15 +51,12 @@ class Local_env(Environnement):
         if self.saver.check_settings_files(config):
             self.settings['env'], self.settings['agent'], self.settings['network'] = self.saver.load_settings(config)
             self.get_settings(self.settings['env'])
-
-            self.model_dir = self.model_name + "_" + self.dataDirectory.replace("/", "_")
         else:
-            self.model_dir = self.model_name + "_" + self.dataDirectory.replace("/", "_")
-
             self.saver.save_settings(self.settings['env'],
                 self.settings['agent'], self.settings['network'], config)
-        self.saver._check(self.model_dir, self.settings)
 
+        self.model_dir = self.model_name
+        self.saver._check(self.model_dir, self.settings)
         self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
         self.episode_count = self.episode_count // self.dl.files_count
         if self.episode_count < 1:
