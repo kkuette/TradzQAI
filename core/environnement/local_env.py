@@ -72,12 +72,10 @@ class Local_env(Environnement):
         self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
         self.state = getState(self.raw, 0, self.window_size + 1)
 
-        '''
-        if self.stock_name.split("_") in self.crypto:
-            self.is_crypto = True
-        '''
-        self.is_crypto = True
-
+        for crypt in self.crypto:
+            if crypt in (self.dl.files[0].split("/"))[len(self.dl.files[0].split("/")) - 1].split("_"):
+                self.is_crypto = True
+                
         if self.is_crypto and 'cfd' in contract_type:
             raise ValueError("Cryptocurrencies cannot be traded as cfd.\
                 \nPlease change contract type to classic.")
