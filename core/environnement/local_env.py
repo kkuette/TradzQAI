@@ -14,9 +14,9 @@ import json
 
 class Local_env(Environnement):
 
-    def __init__(self, mode="train", gui=0, contract_type="classic", config=None):
+    def __init__(self, mode="train", gui=0, contract_type="classic", config=None, agent="PPO"):
 
-        Environnement.__init__(self, gui=0)
+        Environnement.__init__(self, gui=gui)
         if "cfd" in contract_type:
             self.contracts = CFD()
         elif "classic" in contract_type:
@@ -24,17 +24,18 @@ class Local_env(Environnement):
         else:
             raise ValueError("Contract type does not exist")
 
-        self.model_name = "PPO"
+        self.model_name = agent
 
         self.crypto = ['BTC', 'LTC', 'BCH', 'ETH']
         self.is_crypto = False
 
-        self.dataDirectory = "data/BTC_EUR_2018_08/"
+        self.dataDirectory = "data/"
 
         self.episode_count = 1
         self.window_size = 20
         self.batch_size = 32
         self.t_return = 2
+        self.r_period = 10
 
         self.mode = mode
         self._name = self.mode
@@ -58,9 +59,6 @@ class Local_env(Environnement):
         self.model_dir = self.model_name
         self.saver._check(self.model_dir, self.settings)
         self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
-        self.episode_count = self.episode_count // self.dl.files_count
-        if self.episode_count < 1:
-            self.episode_count = 1
         self.logger = Logger()
         self.logger.set_log_path(self.saver.get_model_dir()+"/")
         self.logger.new_logs(self._name)
@@ -86,7 +84,7 @@ class Local_env(Environnement):
 
         self.len_data = len(self.data) - 1
 
-        self.r_period = 10
+
         self.check_dates()
 
     def nextDataset(self):
@@ -122,6 +120,7 @@ class Local_env(Environnement):
             window_size = self.window_size,
             targeted_return = self.t_return,
             data_directory = self.dataDirectory,
+            reward_period = self.r_period
         )
 
         w_settings = dict(

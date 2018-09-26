@@ -123,6 +123,7 @@ class Environnement(object):
         del env['env_settings']['data_directory']
         self.episode_count = env['env_settings']['episodes']
         self.t_return = env['env_settings']['targeted_return']
+        self.r_period = env['env_settings']['reward_period']
         for name, value in env['contract_settings'].items():
             self.contract_settings[name] = value
         for name, value in env['wallet_settings'].items():
