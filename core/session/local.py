@@ -6,11 +6,11 @@ import time
 
 class Local_session(Thread):
 
-    def __init__(self, mode="train", gui=0, contract_type="classic", config='config/', db=None):
+    def __init__(self, mode="train", gui=0, contract_type="classic", config='config/', db=None, agent="PPO"):
         self.db = db
         if not "/" in config[len(config)-1]:
             raise ValueError("You forget \"/\" at the end, it should be {}/".format(config))
-        self.env = Local_env(mode=mode, gui=gui, contract_type=contract_type, config=config)
+        self.env = Local_env(mode=mode, gui=gui, contract_type=contract_type, config=config, agent=agent)
         self.agent = None
         self.worker = Local_Worker
         self.env.stop = False
