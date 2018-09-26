@@ -376,19 +376,18 @@ class Environnement(object):
         avg_max_return /= h_len
         avg_max_drawdown /= h_len
         avg_percent_return = avg_profit / self.wallet.settings['saved_capital'] * 100
-        self.logger._add("Average profit : " + str(round(avg_profit, 2)), "eval_summary")
-        self.logger._add("Average max return : " + str(round(avg_max_return, 3)), "eval_summary")
-        self.logger._add("Average max drawdown : " + str(round(avg_max_drawdown, 3)), "eval_summary")
-        self.logger._add("Average trade : " + str(round(avg_trade, 2)), "eval_summary")
-        self.logger._add("Average trade W/L : " + str(round(avg_trade_WL, 3)), "eval_summary")
-        self.logger._add("Average percent return : " + str(round(avg_percent_return, 3)), "eval_summary")
+        self.logger._add("Average profit : " + str(round(avg_profit, 2)), "summary_eval")
+        self.logger._add("Average max return : " + str(round(avg_max_return, 3)), "summary_eval")
+        self.logger._add("Average max drawdown : " + str(round(avg_max_drawdown, 3)), "summary_eval")
+        self.logger._add("Average trade : " + str(round(avg_trade, 2)), "summary_eval")
+        self.logger._add("Average trade W/L : " + str(round(avg_trade_WL, 3)), "summary_eval")
+        self.logger._add("Average percent return : " + str(round(avg_percent_return, 3)), "summary_eval")
 
         if loss + win > 0:
-            self.logger._add("Day W/L : " + str(round(win / (loss + win), 3)), "eval_summary")
+            self.logger._add("Day W/L : " + str(round(win / (loss + win), 3)), "summary_eval")
         else:
-            self.logger._add("Day W/L : " + str(round(win / 1, 3)), "eval_summary")
-        self.logger._add("Total day : " + str(h_len), "eval_summary")
-        self.logger._add("Day W/L : " + str(round(win / (loss + win), 3)), "eval_summary")
+            self.logger._add("Day W/L : " + str(round(win / 1, 3)), "summary_eval")
+        self.logger._add("Total day : " + str(h_len), "summary_eval")
 
     def episode_process(self):
         self.wallet.historic_process()
@@ -401,10 +400,8 @@ class Environnement(object):
             max_drawdown = self.wallet.historic['max_drawdown'][self.current_step['episode'] - 1],
             max_return = self.wallet.historic['max_return'][self.current_step['episode'] - 1],
             percent_return = self.wallet.profit['percent'],
-            trade_WL = self.trade['win'] + self.trade['loss']
+            trade_WL = 0
         )
-
-        self.historical.append(h_tmp)
 
         self.logger._add("######################################################", self._name)
         self.logger._add("Total reward : " + str(round(self.reward['total'], 3)), self._name)
@@ -418,7 +415,13 @@ class Environnement(object):
         self.logger._add("Percent return : " + str('{:.3f}'.format(self.wallet.profit['percent'])), self._name)
         if  self.trade['win'] + self.trade['loss'] > 0:
             self.logger._add("Trade W/L : " + str('{:.3f}'.format(self.trade['win'] / (self.trade['loss'] + self.trade['win']))), self._name)
+            h_tmp['trade_WL'] = self.trade['win'] / (self.trade['loss'] + self.trade['win'])
         else:
             self.logger._add("Trade W/L : " + str('{:.3f}'.format(self.trade['win'] / 1)), self._name)
+            h_tmp['trade_WL'] = self.trade['win'] / 1
         self.logger._add("Step : " + str(self.current_step['step']), self._name)
         self.logger._add("######################################################", self._name)
+
+
+
+        self.historical.append(h_tmp)

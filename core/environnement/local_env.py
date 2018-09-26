@@ -64,7 +64,7 @@ class Local_env(Environnement):
         self.logger.new_logs(self._name)
         self.dl.setLogger(self.logger)
         if self.mode == "eval":
-            self.logger.new_logs("eval_summary")
+            self.logger.new_logs("summary_eval")
         self.logger.start()
 
         self.dl.loadFile()

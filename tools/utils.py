@@ -38,7 +38,7 @@ class dataLoader(Thread):
 
     def setLogger(self, logger):
         self.logger = logger
-        self.logger.new_logs(self.mode+"_data")
+        self.logger.new_logs("data_"+self.mode)
 
     def getData(self):
         return self.data[0]
@@ -128,7 +128,7 @@ class dataLoader(Thread):
             return
         tmp_data, tmp_raw, tmp_time = self.getStockDataVec(self.files[self.files_index])
         if self.logger:
-            self.logger._add(self.files[self.files_index], self.mode+"_data")
+            self.logger._add(self.files[self.files_index], "data_"+self.mode)
 
         self.files_index += 1
         self.data.append(tmp_data)
