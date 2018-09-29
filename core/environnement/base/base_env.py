@@ -370,6 +370,8 @@ class Environnement(object):
                 if key == 'trade_WL':
                     avg_trade_WL += value
         h_len = len(self.historical)
+        if h_len == 0:
+            return
         avg_profit /= h_len
         avg_trade /= h_len
         avg_trade_WL /= h_len
@@ -421,7 +423,4 @@ class Environnement(object):
             h_tmp['trade_WL'] = self.trade['win'] / 1
         self.logger._add("Step : " + str(self.current_step['step']), self._name)
         self.logger._add("######################################################", self._name)
-
-
-
         self.historical.append(h_tmp)
