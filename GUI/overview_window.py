@@ -67,10 +67,13 @@ class OverviewWindow(QWidget):
 
         #VBox.addStretch()
         h = 245
+        w = 900
+        '''
         if env._platform == 'win32':
             w = 900
         if env._platform == 'Linux':
             w = 915
+        '''
         GBox.setLayout(VBox)
         GBox.setFixedSize(h,w)
 
