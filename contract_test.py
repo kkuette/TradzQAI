@@ -25,16 +25,12 @@ for file in dl.files:
     plt.title("MACD")
     plt.show()
     '''
-from API import *
+from API import Api
 import time
-from threading import Thread
 import sys
 
-passphrase = '8lblucx8ib6'
-key = 'b41ad23461895281d3ea22d48451b3b4'
-b64 = 'bBiIx6kI+lxdULeYTrU2vDJ4JD49wnIZthPbWO1TWhmvUbLPyO1Edgo7v5TahJHAuU6EpkkdPKjQUW0MXGCllA=='
-
-a = Api("cbpro", passphrase=passphrase, b64=b64, key=key)
+a = Api("cbpro", passphrase=passphrase, b64=b64,
+    key=key, url='https://api-public.sandbox.pro.coinbase.com')
 a.start()
 try:
     while True:
@@ -47,7 +43,6 @@ try:
         else:
             print ("I don't understand, please retry\n")
         time.sleep(1)
-
 except KeyboardInterrupt:
-    a._api.stop()
+    a.stop()
     sys.exit(0)
