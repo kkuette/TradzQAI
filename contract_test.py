@@ -1,36 +1,15 @@
-'''
-from tools import *
-import matplotlib.pyplot as plt
-import numpy as np
-
-dl = dataLoader(directory="data/train/")
-
-for file in dl.files:
-    dl.loadFile()
-    plt.figure(num=file.replace("coinbaseEUR_data_daily_i/BTC_EUR_2018_08/", ""))
-    plt.subplot(411)
-    plt.plot(np.array(dl.getRaw()['Price']), color='blue')
-    plt.plot(np.array(dl.getRaw()['EMA20']), color='red')
-    plt.plot(np.array(dl.getRaw()['EMA50']), color='green')
-    plt.plot(np.array(dl.getRaw()['EMA100']), color='black')
-    plt.title("Price, EMA20, 50, 100")
-    plt.subplot(412)
-    plt.plot(np.array(dl.getRaw()['Volume']), color='black')
-    plt.title("Volume")
-    plt.subplot(413)
-    plt.plot(np.array(dl.getRaw()['RSI']), color='blue')
-    plt.title("RSI")
-    plt.subplot(414)
-    plt.plot(np.array(dl.getRaw()['MACD']), color='blue')
-    plt.title("MACD")
-    plt.show()
-    '''
 from API import Api
 import time
 import sys
 
+passphrase = ""
+key = ""
+b64 = ""
+
+url = 'https://api-public.sandbox.pro.coinbase.com'
+
 a = Api("cbpro", passphrase=passphrase, b64=b64,
-    key=key, url='https://api-public.sandbox.pro.coinbase.com')
+    key=key, url=url)
 a.start()
 try:
     while True:
