@@ -159,9 +159,6 @@ class cbprowrapper(object):
                 havetoopen = False
                 open_func()
 
-
-
-
         self.ordernthreads[cthread]['manager'].close()
 
         self.ordernthreads[cthread] = dict(
@@ -195,7 +192,7 @@ class cbprowrapper(object):
             if self.orderbook:
                 if self.orderbook.message_recieved:
                     self.orderbook.message_recieved = False
-                    if (time.time()-self.requestTime) >= 0:
+                    if (time.time()-self.requestTime) >= 1:
                         self.event.set()
                         self.last_asks = round(float(self.orderbook.get_ask()), 2)
                         self.last_bids = round(float(self.orderbook.get_bid()), 2)
@@ -356,16 +353,14 @@ class threadsManager(object):
         co = self.cacheOrder
         o = self.order
         for i in range(len(o)):
-            if round(float(o[i]['price']), 2) != co[i] and \
-                    last != round(float(o[i]['price']), 2):
+            if round(float(o[i]['price']), 2) != co[i]:
                 print (round(float(o[i]['price']), 2), co[i])
                 self.order.append(self.order[i])
                 self.order.pop(i)
-                return self.sortOrders(last=round(float(o[i]['price']), 2))
 
     def cleanOrders(self):
-        self.sortOrders()
         while len(self.order) > 1:
+            #self.sortOrders()
             self.cancel_managment(self.order[0]['id'])
             self.order.pop(0)
             self.cacheOrder.pop(0)
