@@ -112,7 +112,7 @@ class dataLoader(Thread):
 
             elif len_row == 9 and ',' in sep:
                 vec = row['Price'].copy(deep=True)
-                row.drop(row.columns[[0,5,6,7,8]], axis=1, inplace=True)
+                row.drop(row.columns[[0, 6, 7, 8]], axis=1, inplace=True)
 
             elif len_row == 6 and ';' in sep:
                 vec = row['Close'].copy(deep=True)
@@ -134,6 +134,28 @@ class dataLoader(Thread):
         self.data.append(tmp_data)
         self.raw.append(tmp_raw)
         self.time.append(tmp_time)
+
+    def concatAll(self):
+        tmp_data = None
+        tmp_raw = None
+        tmp_time = None
+        for file in range(self.files_count):
+            data, raw, time = self.getStockDataVec(self.files[file])
+            if tmp_data is None and tmp_time is None and tmp_raw is None:
+                tmp_data = data
+                tmp_raw = raw
+                tmp_time = time
+            else:
+                tmp_data = tmp_data.append(data, ignore_index=True)
+                tmp_raw = tmp_raw.append(raw, ignore_index=True)
+                tmp_time = tmp_time.append(time, ignore_index=True)
+        self.data.append(tmp_data)
+        self.raw.append(tmp_raw)
+        self.time.append(tmp_time)
+        self.files_count = 1
+        self.files_index = 1
+
+
 
     def run(self):
         self.loadFile()
