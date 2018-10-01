@@ -70,7 +70,8 @@ class cbprowrapper(object):
                 thread = Thread(target=self.order_managment),
                 side = None,
                 size = 0,
-                manager = threadsManager(self.authClient),
+                manager = threadsManager(self.authClient,
+                    product_id=self.product_id),
                 is_busy = False
                 )
             )
@@ -125,14 +126,12 @@ class cbprowrapper(object):
                 havetoopen = False
                 open_func()
 
-        self.ordernthreads[cthread]['manager'].close()
-
         self.ordernthreads[cthread] = dict(
             thread = Thread(target=self.order_managment),
             side = None,
             size = 0,
-            manager = threadsManager(self.orderbook, self.authClient,
-                self.product_id),
+            manager = threadsManager(authClient=self.authClient,
+                product_id=self.product_id),
             is_busy = False
             )
 
@@ -231,9 +230,10 @@ class OrderBookConsole(OrderBook):
 
 class threadsManager(object):
 
-    def __init__(self, authClient=None):
+    def __init__(self, authClient=None, product_id=None):
 
         self.authClient = authClient
+        self.product_id = product_id
 
         self.maxthreads = 100
 
