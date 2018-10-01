@@ -28,7 +28,7 @@ class dataLoader(Thread):
 
     def setDirectory(self, directory):
         self.files = []
-        self.files_count = 0
+        self.files_count = -1
         self.directory = directory
         if not self.directory:
             raise ValueError("There is no directory")
@@ -121,7 +121,7 @@ class dataLoader(Thread):
             return vec, row, time
 
     def loadFile(self):
-        if self.files_index == self.files_count:
+        if self.files_index > self.files_count:
             self.data.append(None)
             self.raw.append(None)
             self.time.append(None)
