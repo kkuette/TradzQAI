@@ -18,9 +18,9 @@ class Local_env(Environnement):
     def __init__(self, mode="train", gui=0, contract_type="classic", config=None, agent="PPO"):
 
         Environnement.__init__(self, gui=gui)
-        if "cfd" in contract_type:
+        if "cfd" == contract_type:
             self.contracts = CFD()
-        elif "classic" in contract_type:
+        elif "classic" == contract_type:
             self.contracts = Classic()
         else:
             raise ValueError("Contract type does not exist")
@@ -62,6 +62,12 @@ class Local_env(Environnement):
                 self.settings['agent'], self.settings['network'], config)
 
         if self.dataDirectory:
+            if "cfd" == self.contract_type:
+                self.contracts = CFD()
+            elif "classic" == self.contract_type:
+                self.contracts = Classic()
+            else:
+                raise ValueError("Contract type does not exist")
             self.model_dir = self.model_name
             self.saver._check(self.model_dir, self.settings)
             self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
@@ -72,23 +78,24 @@ class Local_env(Environnement):
             self.dl.setLogger(self.logger)
             if self.mode == "eval":
                 self.logger.new_logs("summary_eval")
-            self.logger.start()
 
             self.dl.loadFile()
 
             self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
             self.state = getState(self.raw, 0, self.window_size + 1)
-
             for crypt in self.crypto:
                 if crypt in (self.dl.files[0].split("/"))[len(self.dl.files[0].split("/")) - 1].split("_"):
                     self.is_crypto = True
 
-            if self.is_crypto and 'cfd' in contract_type:
+            if self.is_crypto and 'cfd' in self.contract_type:
+                self.close()
                 raise ValueError("Cryptocurrencies cannot be traded as cfd.\
                     \nPlease change contract type to classic.")
 
             self.len_data = len(self.data) - 1
             self.check_dates()
+        else:
+            self.close()
 
     def nextDataset(self):
         self.dl.loadFile()

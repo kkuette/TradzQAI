@@ -1,6 +1,8 @@
 from core import Local_Worker
 from core import Local_env
 from threading import Thread
+
+from tools import *
 import time
 
 
@@ -11,6 +13,7 @@ class Local_session(Thread):
         if not "/" in config[len(config)-1]:
             raise ValueError("You forget \"/\" at the end, it should be {}/".format(config))
         self.env = Local_env(mode=mode, gui=gui, contract_type=contract_type, config=config, agent=agent)
+        self.config = config
         self.agent = None
         self.worker = Local_Worker
         Thread.__init__(self)
@@ -40,8 +43,12 @@ class Local_session(Thread):
             raise ValueError('could not import %s' %self. env.model_name)
 
     def loadSession(self):
-        self.initAgent()
-        self.initWorker()
+        if not self.env.stop:
+            self.initAgent()
+            self.initWorker()
+        else:
+            print (red("Warning : ")+"You cannot load the session without setting,\
+            any data directory in %s/environnement" % self.config)
 
     def initAgent(self):
         if not self.agent:
@@ -58,8 +65,12 @@ class Local_session(Thread):
     def run(self):
         if not self.agent:
             raise ValueError("add an agent and load the session before running")
-        else:
+        elif not self.env.stop:
+            self.env.logger.start()
             if self.env.gui == 0:
                 Thread(target=self.worker.run).start()
             else:
                 self.worker.start()
+        else:
+            print (red("Warning : ")+"You cannot start the session without setting,\
+            any data directory in %s/environnement" % self.config)

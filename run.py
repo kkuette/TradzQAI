@@ -43,7 +43,7 @@ if __name__ == '__main__':
     elif args.build:
         from core import Local_session as Session
         args.build = "PPO"
-        session = Session(mode=args.mode, config=args.config, contract_type='classic', agent=args.build)
+        session = Session(mode=args.mode, config=args.config, agent=args.build)
         session._stop()
 
     else:
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             from core import Local_session as Session
         else:
             from core import Live_session as Session
-        session = Session(mode=args.mode, config=args.config, contract_type='cfd')
+        session = Session(mode=args.mode, config=args.config)
         session.setAgent(device=device)
         session.loadSession()
         session.start()
@@ -59,6 +59,6 @@ if __name__ == '__main__':
             while not session.env.stop:
                 time.sleep(1)
             session.stop()
-        except KeyboardInterrupt:
+        except:
             session.stop()
         sys.exit(0)
