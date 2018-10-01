@@ -21,7 +21,7 @@ class cbprowrapper(object):
         self.db = db
         self.authClient = None
 
-        self.maxthreads = 20
+        self.maxthreads = 5
 
         self.spread = 0
 
@@ -40,6 +40,8 @@ class cbprowrapper(object):
 
         self.is_running = False
         self.is_done = True
+
+        self.requestTime = time.time()
 
         self.event = Event()
         self.event.clear()
@@ -135,7 +137,8 @@ class cbprowrapper(object):
         elif "sell" in self.ordernthreads[cthread]['side']:
             checking_func = self.sell_checking
             open_func = self.ordernthreads[cthread]['manager'].sell_managment
-
+        self.ordernthreads[cthread]['manager'].setEvent(self.ordernthreads[cthread]['event'])
+        Thread(target=self.ordernthreads[cthread]['manager'].run).start()
         self.ordernthreads[cthread]['manager'].setSize(self.ordernthreads[cthread]['size'])
         havetoopen = True
         while self.is_running:
@@ -156,7 +159,7 @@ class cbprowrapper(object):
                 havetoopen = False
                 open_func()
 
-            self.ordernthreads[cthread]['manager'].cleanOrders()
+
 
 
         self.ordernthreads[cthread]['manager'].close()
@@ -191,21 +194,23 @@ class cbprowrapper(object):
         while self.is_running:
             if self.orderbook:
                 if self.orderbook.message_recieved:
-                    self.event.set()
                     self.orderbook.message_recieved = False
-                    self.last_asks = round(float(self.orderbook.get_ask()), 2)
-                    self.last_bids = round(float(self.orderbook.get_bid()), 2)
-                    #print (self.last_asks, self.last_bids)
-                    #print (self.last_asks, self.orderbook.last_bids)
-                    if self.last_asks and self.last_bids:
-                        self.spread = round(self.last_asks - self.last_bids, 2)
-                        if self.havetobuy:
-                            self.havetobuy = False
-                            self.orderManagment("buy", self.order_size)
-                        elif self.havetosell:
-                            self.havetosell = False
-                            self.orderManagment("sell", self.order_size)
-                    self.event.clear()
+                    if (time.time()-self.requestTime) >= 0:
+                        self.event.set()
+                        self.last_asks = round(float(self.orderbook.get_ask()), 2)
+                        self.last_bids = round(float(self.orderbook.get_bid()), 2)
+                        #print (self.last_asks, self.last_bids)
+                        #print (self.last_asks, self.orderbook.last_bids)
+                        if self.last_asks and self.last_bids:
+                            self.spread = round(self.last_asks - self.last_bids, 2)
+                            if self.havetobuy:
+                                self.havetobuy = False
+                                self.orderManagment("buy", self.order_size)
+                            elif self.havetosell:
+                                self.havetosell = False
+                                self.orderManagment("sell", self.order_size)
+                        self.requestTime = time.time()
+                        self.event.clear()
 
     def stop(self):
         self.is_running = False
@@ -271,8 +276,8 @@ class OrderBookConsole(OrderBook):
             self._bid_depth = bid_depth
             self._ask_depth = ask_depth
 
-            print('{} {} bid: {:.3f} @ {:.2f}  ask: {:.3f} @ {:.2f}'.format(
-                dt.datetime.now(), self.product_id, bid_depth, bid, ask_depth, ask))
+            #print('{} {} bid: {:.3f} @ {:.2f}  ask: {:.3f} @ {:.2f}'.format(
+            #    dt.datetime.now(), self.product_id, bid_depth, bid, ask_depth, ask))
 
 
 class threadsManager(object):
@@ -299,6 +304,8 @@ class threadsManager(object):
         self.last_bids = None
         self.last_asks = None
 
+        self.event = None
+
         self.should_arrive = []
 
         self.bnthreads = deque(maxlen=self.maxthreads)
@@ -312,6 +319,9 @@ class threadsManager(object):
     def setLasts(self, bid, ask):
         self.last_bids = bid
         self.last_asks = ask
+
+    def setEvent(self, event):
+        self.event = event
 
     def close(self):
         self.is_running = False
@@ -345,21 +355,17 @@ class threadsManager(object):
     def sortOrders(self, last=None):
         co = self.cacheOrder
         o = self.order
-        idx = 0
         for i in range(len(o)):
             if round(float(o[i]['price']), 2) != co[i] and \
-                    last != co[i]:
+                    last != round(float(o[i]['price']), 2):
+                print (round(float(o[i]['price']), 2), co[i])
                 self.order.append(self.order[i])
-                idx = self.sortOrders(last=co[i])
-                break
-            idx = i
-        if idx == 0:
-            idx = 1
-        return idx
+                self.order.pop(i)
+                return self.sortOrders(last=round(float(o[i]['price']), 2))
 
     def cleanOrders(self):
-        l = self.sortOrders()
-        while len(self.order) > (len(self.order) - l) + 1:
+        self.sortOrders()
+        while len(self.order) > 1:
             self.cancel_managment(self.order[0]['id'])
             self.order.pop(0)
             self.cacheOrder.pop(0)
@@ -375,9 +381,9 @@ class threadsManager(object):
 
     def buy(self):
         cthread = self.lastb_thread
-        self.price = self.last_bids
-        self.cacheOrder.append(self.price)
-        m=self.authClient.buy(price=self.last_bids,
+        p, self.price = self.last_bids, self.last_bids
+        self.cacheOrder.append(p)
+        m=self.authClient.buy(price=p,
                             size=self.size,
                             order_type='limit',
                             product_id=self.product_id[0],
@@ -400,9 +406,9 @@ class threadsManager(object):
 
     def sell(self):
         cthread = self.lasts_thread
-        self.price = self.last_asks
-        self.cacheOrder.append(self.price)
-        m = self.authClient.sell(price=self.last_asks,
+        p, self.price = self.last_asks, self.last_asks
+        self.cacheOrder.append(p)
+        m = self.authClient.sell(price=p,
                             size=self.size,
                             order_type='limit',
                             product_id=self.product_id[0],
@@ -449,3 +455,9 @@ class threadsManager(object):
                 self.snthreads[i]['thread'].start()
                 return
         print ("All sell threads are busy")
+
+    def run(self):
+        while self.is_running:
+            self.cleanOrders()
+            if self.event:
+                self.event.wait(timeout=0.007)
