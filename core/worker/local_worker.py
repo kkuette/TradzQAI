@@ -33,7 +33,7 @@ class Local_Worker(QThread):
         QThread.__init__(self)
 
     def run(self):
-        step = range(self.env.dl.files_count - 1)
+        step = range(self.env.dl.files_count)
         if self.env.gui == 0:
             step = tqdm(step)
 
@@ -50,7 +50,7 @@ class Local_Worker(QThread):
         if self.env.mode == "eval":
             self.env.eval_processing()
         step.close()
-        self.env.stop = True
+        self.env.close()
 
     def step(self):
         ep = range(self.env.episode_count)

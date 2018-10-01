@@ -10,7 +10,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 agent = "PPO"
 device = "/cpu:0"
 
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="TradzQAI, all model configuration are in conf.cfg")
@@ -52,15 +51,14 @@ if __name__ == '__main__':
             from core import Local_session as Session
         else:
             from core import Live_session as Session
-        session = Session(mode=args.mode, config=args.config, contract_type='classic')
+        session = Session(mode=args.mode, config=args.config, contract_type='cfd')
         session.setAgent(device=device)
         session.loadSession()
         session.start()
         try:
             while not session.env.stop:
                 time.sleep(1)
-            session._stop()
-        except (KeyboardInterrupt, ValueError, AttributeError):
-            if session:
-                session._stop()
+            session.stop()
+        except KeyboardInterrupt:
+            session.stop()
         sys.exit(0)

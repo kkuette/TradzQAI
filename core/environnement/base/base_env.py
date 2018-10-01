@@ -48,6 +48,7 @@ class Environnement(object):
         self.day_changed = False
         self.new_episode = False
         self.closed = False
+        self.stop = False
 
         self.lst_act = deque(maxlen=1000)
         self.lst_reward = deque(maxlen=1000)
@@ -64,6 +65,11 @@ class Environnement(object):
         self.historical = []
 
         self.tensorOCHL = [[] for _ in range(4)]
+
+    def close(self):
+        self.stop = True
+        self.logger.stop()
+        self.event.set()
 
     def get_network(self):
 
@@ -124,6 +130,7 @@ class Environnement(object):
         self.episode_count = env['env_settings']['episodes']
         self.t_return = env['env_settings']['targeted_return']
         self.r_period = env['env_settings']['reward_period']
+        self.contract_type = env['env_settings']['contract_type']
         for name, value in env['contract_settings'].items():
             self.contract_settings[name] = value
         for name, value in env['wallet_settings'].items():
@@ -346,6 +353,7 @@ class Environnement(object):
         return np.average(np.array(reward[(len(reward) - 1) - n:]))
 
     def eval_processing(self):
+        self.event.set()
         win = 0
         loss = 0
         avg_profit = 0
@@ -390,8 +398,10 @@ class Environnement(object):
         else:
             self.logger._add("Day W/L : " + str(round(win / 1, 3)), "summary_eval")
         self.logger._add("Total day : " + str(h_len), "summary_eval")
+        self.event.clear()
 
     def episode_process(self):
+        self.event.set()
         self.wallet.historic_process()
 
         h_tmp = dict(
@@ -424,3 +434,4 @@ class Environnement(object):
         self.logger._add("Step : " + str(self.current_step['step']), self._name)
         self.logger._add("######################################################", self._name)
         self.historical.append(h_tmp)
+        self.event.clear()

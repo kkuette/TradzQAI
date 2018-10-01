@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from collections import deque
 from tqdm import tqdm
+from threading import Event
 
 import os
 import sys
@@ -29,7 +30,9 @@ class Local_env(Environnement):
         self.crypto = ['BTC', 'LTC', 'BCH', 'ETH']
         self.is_crypto = False
 
-        self.dataDirectory = "data/"
+        self.contract_type = contract_type
+
+        self.dataDirectory = None
 
         self.episode_count = 1
         self.window_size = 20
@@ -39,6 +42,8 @@ class Local_env(Environnement):
 
         self.mode = mode
         self._name = self.mode
+        self.event = Event()
+        self.event.clear()
 
         self.wallet = self.contracts.getWallet()
         self.inventory = self.contracts.getInventory()
@@ -56,34 +61,34 @@ class Local_env(Environnement):
             self.saver.save_settings(self.settings['env'],
                 self.settings['agent'], self.settings['network'], config)
 
-        self.model_dir = self.model_name
-        self.saver._check(self.model_dir, self.settings)
-        self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
-        self.logger = Logger()
-        self.logger.set_log_path(self.saver.get_model_dir()+"/")
-        self.logger.new_logs(self._name)
-        self.dl.setLogger(self.logger)
-        if self.mode == "eval":
-            self.logger.new_logs("summary_eval")
-        self.logger.start()
+        if self.dataDirectory:
+            self.model_dir = self.model_name
+            self.saver._check(self.model_dir, self.settings)
+            self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
+            self.logger = Logger()
+            self.logger.setEvent(self.event)
+            self.logger.set_log_path(self.saver.get_model_dir()+"/")
+            self.logger.new_logs(self._name)
+            self.dl.setLogger(self.logger)
+            if self.mode == "eval":
+                self.logger.new_logs("summary_eval")
+            self.logger.start()
 
-        self.dl.loadFile()
+            self.dl.loadFile()
 
-        self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
-        self.state = getState(self.raw, 0, self.window_size + 1)
+            self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
+            self.state = getState(self.raw, 0, self.window_size + 1)
 
-        for crypt in self.crypto:
-            if crypt in (self.dl.files[0].split("/"))[len(self.dl.files[0].split("/")) - 1].split("_"):
-                self.is_crypto = True
-                
-        if self.is_crypto and 'cfd' in contract_type:
-            raise ValueError("Cryptocurrencies cannot be traded as cfd.\
-                \nPlease change contract type to classic.")
+            for crypt in self.crypto:
+                if crypt in (self.dl.files[0].split("/"))[len(self.dl.files[0].split("/")) - 1].split("_"):
+                    self.is_crypto = True
 
-        self.len_data = len(self.data) - 1
+            if self.is_crypto and 'cfd' in contract_type:
+                raise ValueError("Cryptocurrencies cannot be traded as cfd.\
+                    \nPlease change contract type to classic.")
 
-
-        self.check_dates()
+            self.len_data = len(self.data) - 1
+            self.check_dates()
 
     def nextDataset(self):
         self.dl.loadFile()
@@ -108,6 +113,7 @@ class Local_env(Environnement):
         c_settings = dict(
             allow_short = self.contract_settings['allow_short'],
             contract_size = self.contract_settings['contract_size'],
+            contract_price = self.contract_settings['contract_price'],
             pip_value = self.contract_settings['pip_value'],
             spread = self.contract_settings['spread']
         )
@@ -117,8 +123,9 @@ class Local_env(Environnement):
             episodes = self.episode_count,
             window_size = self.window_size,
             targeted_return = self.t_return,
-            data_directory = self.dataDirectory,
-            reward_period = self.r_period
+            data_directory = "data/",
+            reward_period = self.r_period,
+            contract_type = self.contract_type,
         )
 
         w_settings = dict(
@@ -154,7 +161,6 @@ class Local_env(Environnement):
             while (self.pause == 1):
                 time.sleep(0.01)
         self.current_step['step'] += 1
-
         self.closed = False
         self.action = action
         if self.step_left == 0:

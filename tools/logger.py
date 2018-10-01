@@ -20,8 +20,12 @@ class Logger(Thread):
         self.log_file_path = {}
 
         self._running = False
+        self.event = None
 
         Thread.__init__(self)
+
+    def setEvent(self, event):
+        self.event = event
 
     def new_logs(self, name):
         '''
@@ -74,14 +78,13 @@ class Logger(Thread):
                     self.current_index[name] += 1
                     self.save_logs(logs=self.logs[name][self.current_index[name]], name=name)
 
+    def stop(self):
+        self.running = False
+
     def run(self, write_time=1):
-        self._running = True
-        while self._running:
+        self.running = True
+        while self.running:
             self.write_logs()
-            tmp = 0
-            while tmp < write_time:
-                if not self._running:
-                    break
-                time.sleep(0.1)
-                tmp += 0.1
+            if self.event:
+                self.event.wait(timeout=write_time)
         self.write_logs()

@@ -180,8 +180,9 @@ class Wallet(object):
             self.settings['used_margin'] = 0
 
     def manage_exposure(self, contract_settings):
-        #self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
+        self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
         max_order_valid = self.risk_managment['capital_exposure'] // (contract_settings['contract_size'] * (contract_settings['contract_price'] * contract_settings['pip_value']))
+        #tqdm.write(str(max_order_valid))
         if max_order_valid <= self.risk_managment['max_pos']:
             self.risk_managment['current_max_pos'] = max_order_valid
             self.risk_managment['max_order_size'] = 1
@@ -193,7 +194,7 @@ class Wallet(object):
             else:
                 self.risk_managment['max_order_size'] = 1
         if self.risk_managment['current_max_pos'] < 1 and self.firstCheck:
-            raise ValueError('current_max_pos : {} We cant afford any contract. Please check wallet settings.'.format(self.risk_managment['current_max_pos']))
+            raise ValueError('current_max_pos : {:.3f} We cant afford any contract. Please check wallet settings.'.format(self.risk_managment['current_max_pos']))
         else:
             self.firstCheck = False
 

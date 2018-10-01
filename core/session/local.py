@@ -13,19 +13,10 @@ class Local_session(Thread):
         self.env = Local_env(mode=mode, gui=gui, contract_type=contract_type, config=config, agent=agent)
         self.agent = None
         self.worker = Local_Worker
-        self.env.stop = False
         Thread.__init__(self)
 
-    def _stop(self):
-
-        self.env.stop = True
-        time.sleep(2)
-
-        try:
-            self.env.logger._running = False
-        except:
-            pass
-
+    def stop(self):
+        self.env.close()
 
     def getWorker(self):
         return self.worker
