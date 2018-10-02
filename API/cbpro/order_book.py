@@ -15,8 +15,18 @@ from .websocket_client import WebsocketClient
 
 
 class OrderBook(WebsocketClient):
-    def __init__(self, url="wss://ws-feed.pro.coinbase.com", product_id='BTC-USD', log_to=None):
-        super(OrderBook, self).__init__(url=url, products=product_id)
+    def __init__(self,
+                 url="wss://ws-feed.pro.coinbase.com",
+                 product_id='BTC-USD',
+                 api_key="",
+                 api_secret="",
+                 api_passphrase="",
+                 channels=None,
+                 log_to=None):
+
+        super(OrderBook, self).__init__(url=url, products=product_id,
+            api_key=api_key, api_secret=api_secret,
+            api_passphrase=api_passphrase, channels=channels)
         self._asks = SortedDict()
         self._bids = SortedDict()
         self._client = PublicClient()
@@ -225,7 +235,7 @@ class OrderBook(WebsocketClient):
         return self._asks.peekitem(0)[0]
 
     def get_nasks(self, n):
-        return self._asks.peekitem(n)[0]
+        return [self.get_asks(self._asks.peekitem(n)[0]) for i in range(n)]
 
     def get_asks(self, price):
         return self._asks.get(price)
@@ -240,7 +250,7 @@ class OrderBook(WebsocketClient):
         return self._bids.peekitem(-1)[0]
 
     def get_nbids(self, n):
-        self._bids.peekitem(-(n+1))[0]
+        return [self.get_bids(self._bids.peekitem(-i)[0]) for i in range(1, n+1)]
 
     def get_bids(self, price):
         return self._bids.get(price)
