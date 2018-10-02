@@ -200,7 +200,6 @@ class cbprowrapper(object):
                 self.event.wait()
                 threads = 2 if self.oncthread >= 2 else self.oncthread
                 if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*(threads*2):
-                    print (time.time()-self.requestTime)
                     self.managerSelector()
                     self.requestTime = time.time()
                     self.event.clear()
