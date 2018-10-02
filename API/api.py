@@ -35,6 +35,18 @@ class Api(object):
             self._api = getattr(getattr(__import__('API.%s' % self.api_name),
                 self.api_name), self.api_name+'wrapper')
 
+    def setBestPriceFunc(self, func):
+        """
+            Set a function for any strategy.
+
+            args:
+                last bids: function that take a int (depth)
+                        return: <generator> each row is a list filled with dict
+                last asks: function that take a int (depth)
+                        return: <generator> each row is a list filled with dict
+        """
+        self._api.setBestPriceFunc(func)
+
     def getAPI(self):
         return self._api
 
