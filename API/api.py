@@ -4,8 +4,9 @@ class Api(object):
 
     def __init__(self, api_name="cbpro", key=None, b64=None,
         passphrase=None, product_id=['BTC-EUR'], db=None,
-        url="https://api.pro.coinbase.com"):
+        url="https://api.pro.coinbase.com", mode="maker"):
 
+        self.mode = mode
         self.key = key
         self.b64 = b64
         self.passphrase = passphrase
@@ -26,7 +27,7 @@ class Api(object):
 
     def initAPI(self):
         self._api = self._api(key=self.key, b64=self.b64, passphrase=self.passphrase,
-            product_id=self.product_id, db=self.db, url=self.url)
+            product_id=self.product_id, db=self.db, url=self.url, mode=self.mode)
 
     def setAPI(self, api_name=None):
         if api_name:
