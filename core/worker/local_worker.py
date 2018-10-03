@@ -69,7 +69,7 @@ class Local_Worker(QThread):
                 action = self.agent.act(state, deterministic=self.deterministic) # Get action from agent
                 # Get new state
                 state, terminal, reward = self.env.execute(action)
-                if "train" in self.env.mode:
+                if "train" == self.env.mode:
                     self.agent.observe(reward=reward, terminal=terminal)
                 if self.env.gui == 1:
                     self.sig_step.emit() # Update GUI
@@ -78,7 +78,7 @@ class Local_Worker(QThread):
                     dat.update(1)
                 self.env.loop_t = time.time() - tmp
                 if terminal or self.agent.should_stop() or self.env.stop:
-                    if terminal:
+                    if terminal and self.env.mode == "train":
                         self.agent.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
                     break
 
