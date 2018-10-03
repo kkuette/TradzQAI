@@ -15,7 +15,8 @@ import json
 
 class Local_env(Environnement):
 
-    def __init__(self, mode="train", gui=0, contract_type="classic", config=None, agent="PPO"):
+    def __init__(self, mode="train", gui=0, contract_type="classic",
+            config=None, agent="PPO"):
 
         Environnement.__init__(self, gui=gui)
         if "cfd" == contract_type:
@@ -97,6 +98,12 @@ class Local_env(Environnement):
             self.check_dates()
         else:
             self.close()
+
+    def close(self):
+        self.stop = True
+        if self.logger:
+            self.logger.stop()
+        self.event.set()
 
     def nextDataset(self):
         self.dl.loadFile()
@@ -198,7 +205,6 @@ class Local_env(Environnement):
                 self.action = 2
             else:
                 self.action = 1
-
 
         self.wallet.manage_wallet(self.inventory.get_inventory(), self.price,
                             self.contract_settings)

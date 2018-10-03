@@ -66,12 +66,6 @@ class Environnement(object):
 
         self.tensorOCHL = [[] for _ in range(4)]
 
-    def close(self):
-        self.stop = True
-        if self.logger:
-            self.logger.stop()
-        self.event.set()
-
     def get_network(self):
 
         network = [dict(type='dense', size=64, activation='relu'),
