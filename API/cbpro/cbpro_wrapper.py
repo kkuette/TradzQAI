@@ -44,6 +44,9 @@ class cbprowrapper(object):
         self.is_done = True
         self.bpfunc = None
         self.bestprice = 0
+        self.eur_wallet = None
+        self.btc_wallet = None
+        self.wallet = None
         self.requestTime = time.time()
         self.event = Event()
         self.event.clear()
@@ -59,6 +62,10 @@ class cbprowrapper(object):
         if self.key and self.b64 and self.passphrase:
             self.authClient = AuthenticatedClient(self.key, self.b64,
                     self.passphrase, api_url=self.url)
+
+    def getWallet(self):
+        if self.authClient:
+            return self.authClient.get_accounts()
 
     def setBestPriceFunc(self, function):
         self.bpfunc = function
@@ -92,19 +99,20 @@ class cbprowrapper(object):
         return False
 
     def getBestPrice(self, bids, asks):
-        #idx = 1
         idx = np.random.randint(low=1, high=30, size=1)[0]
         if self.ordernthreads[0]['side'] == "buy":
             return round(float(bids(idx)[idx-1][0]['price']), 2)
         elif self.ordernthreads[0]['side'] == "sell":
             return round(float(asks(idx)[idx-1][0]['price']), 2)
 
-    def orderManagment(self, side, volume):
+    def orderManagment(self, side, volume, order=None, price=0):
         for i in range(len(self.ordernthreads)):
             if not self.ordernthreads[i]['is_busy']:
                 self.lasto_thread = i
                 self.ordernthreads[i]['size'] = volume
                 self.ordernthreads[i]['side'] = side
+                self.ordernthreads[i]['manager'].price = price
+                self.ordernthreads[i]['manager'].order = [order]
                 self.ordernthreads[i]['is_busy'] = True
                 self.ordernthreads[i]['thread'].start()
                 return
@@ -119,7 +127,8 @@ class cbprowrapper(object):
             open_func = self.ordernthreads[cthread]['manager'].sell_managment
         self.ordernthreads[cthread]['event'].clear()
         self.ordernthreads[cthread]['manager'].setSize(self.ordernthreads[cthread]['size'])
-        havetoopen = True
+        if not self.ordernthreads[cthread]['manager'].order:
+            havetoopen = True
         while self.ordernthreads[cthread]['is_busy'] and self.is_running:
 
             self.ordernthreads[cthread]['event'].wait()
@@ -259,6 +268,9 @@ class cbprowrapper(object):
         if self.authClient:
             Thread(target=self.runAuthClient).start()
             self.buildNthread(n=self.maxthreads)
+            for order in self.authClient.get_orders():
+                self.orderManagment(order['side'], order['size'], order=order,
+                    price=order['price'])
         Thread(target=self.runOrderBook, daemon=True).start()
 
 class OrderBookConsole(OrderBook):

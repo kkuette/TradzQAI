@@ -51,6 +51,14 @@ class Api(object):
     def getAPI(self):
         return self._api
 
+    def getAccounts(self):
+        return self._api.getWallet()
+
+    def getAccount(self, currency="EUR"):
+        for account in self.getAccounts()
+            if account['currency'] == currency:
+                return account
+
     def buy(self, volume):
         self._api.addOrder("buy", volume)
 
