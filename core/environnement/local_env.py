@@ -33,6 +33,7 @@ class Local_env(Environnement):
         self.contract_type = contract_type
 
         self.dataDirectory = None
+        self.logger = None
 
         self.episode_count = 1
         self.window_size = 20
