@@ -58,6 +58,7 @@ class Wallet(object):
         )
 
         self.firstCheck = True
+        self.min_size = 0.001
 
     def init_default(self):
         self.settings['saved_capital'] = self.settings['capital']
@@ -159,15 +160,15 @@ class Wallet(object):
     def manage_wallet(self, inventory, price, contract_settings):
         avg = 0
         i = 0
-        while i != len(inventory['POS']):
-            avg += inventory['Price'].iloc[i]
+        while i < len(inventory):
+            avg += inventory[i]['Price']
             i += 1
         if i > 0:
             avg /= i
-            if "SELL" in inventory['POS'][0]:
+            if "SELL" in inventory[0]['POS']:
                 self.settings['GL_profit'] = (avg - price['sell']) * i * contract_settings['pip_value'] * contract_settings['contract_size'] + \
                     (self.calc_fees(avg * contract_settings['contract_size']) * i)
-            elif "BUY" in inventory['POS'][0]:
+            elif "BUY" in inventory[0]['POS']:
                 self.settings['GL_profit'] = (price['buy'] - avg) * i * contract_settings['pip_value'] * contract_settings['contract_size'] + \
                     (self.calc_fees(avg * contract_settings['contract_size']) * i)
         else:
@@ -202,15 +203,13 @@ class Wallet(object):
         self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
         size = self.risk_managment['capital_exposure'] / (contract_settings['contract_price'] * contract_settings['pip_value'])
         idx = self.risk_managment['max_pos']
-        min_price = 10 / contract_settings['contract_price']
+        self.min_size = 0.001
         tmp_size = size / idx
-        if idx > 1:
-            while idx >= 1 and tmp_size <= min_price:
-                idx = float(idx * (1-size))
-                tmp_size = size / idx
-        idx = int(idx)
-        size = float(Decimal(str(tmp_size)).quantize(Decimal('.000001'), rounding=ROUND_DOWN))
-        if (size < min_price or idx < 1) and self.firstCheck:
+        while idx > 1 and tmp_size <= self.min_size:
+            idx = int(idx * (1-size))
+            tmp_size = size / idx
+        size = float(Decimal(str(tmp_size)).quantize(Decimal('.00001'), rounding=ROUND_DOWN))
+        if (size < self.min_size or idx < 1) and self.firstCheck:
             raise ValueError("Your contract size {:.4f} is too small, or you cannot afford any contract max pos : {}. Please check your settings".format(size, idx))
         #elif size < 1.0:
             #return size
