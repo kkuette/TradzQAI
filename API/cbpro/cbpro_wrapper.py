@@ -42,6 +42,8 @@ class cbprowrapper(object):
         self.lasto_thread = 0
         self.oncthread = 0
         self.selector_id = 0
+        self.unused_manager = 0
+        self.no_thread_used = False
         self.order_size = 0
         self.is_running = False
         self.is_done = True
@@ -109,7 +111,8 @@ class cbprowrapper(object):
         return False
 
     def getBestPrice(self, bids, asks):
-        idx = np.random.randint(low=1, high=30, size=1)[0]
+        idx = 5
+        #idx = np.random.randint(low=1, high=30, size=1)[0]
         if self.ordernthreads[0]['side'] == "buy":
             return round(float(bids(idx)[idx-1][0]['price']), 2)
         elif self.ordernthreads[0]['side'] == "sell":
@@ -150,9 +153,14 @@ class cbprowrapper(object):
                 havetoopen = True
                 self.ordernthreads[cthread]['manager'].rejected = False
             if havetoopen:
+                self.no_thread_used = False
+                self.unused_manager = 0
                 self.ordernthreads[cthread]['manager'].cleanOrders()
                 havetoopen = False
                 open_func()
+            elif self.ordernthreads[cthread]['is_busy'] and self.is_running:
+                self.unused_manager += 1
+                self.managerSelector()
             self.ordernthreads[cthread]['event'].clear()
 
         if self.auto_cancel:
@@ -184,18 +192,20 @@ class cbprowrapper(object):
                                     order_type='market',
                                     product_id=self.product_id[0])
 
-    def managerSelector(self, id=0, timeout=0):
-        if id == 1:
+    def managerSelector(self, timeout=0):
+        if timeout == self.maxthreads:
             return
-        elif timeout == self.maxthreads:
+        elif self.unused_manager == self.oncthread:
+            self.unused_manager = 0
+            self.no_thread_used = True
             return
         else:
             self.selector_id += 1
             if not self.ordernthreads[self.selector_id % self.maxthreads]['is_busy']:
-                self.managerSelector(id=id, timeout=timeout+1)
+                self.managerSelector(timeout=timeout+1)
             else:
                 self.ordernthreads[self.selector_id % self.maxthreads]['event'].set()
-                self.managerSelector(id=id+1, timeout=0)
+                return
 
     def closeAllManagers(self):
         for thread in self.ordernthreads:
@@ -253,9 +263,10 @@ class cbprowrapper(object):
                 self.event.wait()
                 self.checkFills()
                 self.checkChanges()
-                if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*2:
-                    self.managerSelector()
+                if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*2\
+                        or self.no_thread_used:
                     self.requestTime = time.time()
+                    self.managerSelector()
                 if self.is_running:
                     self.event.clear()
 
