@@ -8,6 +8,7 @@ from copy import deepcopy
 from threading import Thread, Event
 from collections import deque
 import numpy as np
+from datetime import datetime
 
 class cbprowrapper(object):
 
@@ -20,13 +21,15 @@ class cbprowrapper(object):
                  db=None,
                  max_orders=5,
                  max_request_per_sec=5,
-                 mode="maker"):
+                 mode="maker",
+                 auto_cancel=True):
 
         self.key = key
         self.b64 = b64
         self.passphrase = passphrase
         self.url = url
         self.product_id = product_id
+        self.auto_cancel = auto_cancel
         self.db = db
         self.authClient = None
         self.mode = mode
@@ -66,6 +69,13 @@ class cbprowrapper(object):
     def getWallet(self):
         if self.authClient:
             return self.authClient.get_accounts()
+
+    def getHistorical(self):
+        return self.orderbook.getHistorical()
+
+    def getTicks(self):
+        if self.orderbook:
+            return self.orderbook.getTicks()
 
     def setBestPriceFunc(self, function):
         self.bpfunc = function
@@ -127,34 +137,27 @@ class cbprowrapper(object):
             open_func = self.ordernthreads[cthread]['manager'].sell_managment
         self.ordernthreads[cthread]['event'].clear()
         self.ordernthreads[cthread]['manager'].setSize(self.ordernthreads[cthread]['size'])
-        if not self.ordernthreads[cthread]['manager'].order:
+        if not self.ordernthreads[cthread]['manager'].order[0]:
             havetoopen = True
         while self.ordernthreads[cthread]['is_busy'] and self.is_running:
-
             self.ordernthreads[cthread]['event'].wait()
             self.ordernthreads[cthread]['best_price'] = self.bpfunc(self.last_bids,
                 self.last_asks)
             self.ordernthreads[cthread]['manager'].setBestPrice(self.ordernthreads[cthread]['best_price'])
-            orders = deepcopy(self.ordernthreads[cthread]['manager'].order)
-
-            if len(orders) > 0:
-                havetoopen = self.price_checking(self.ordernthreads[cthread]['best_price'],
-                    self.ordernthreads[cthread]['manager'].price)
-                if havetoopen:
-                    self.ordernthreads[cthread]['manager'].cleanOrders()
-
+            havetoopen = self.price_checking(self.ordernthreads[cthread]['best_price'],
+                self.ordernthreads[cthread]['manager'].price)
             if self.ordernthreads[cthread]['manager'].rejected:
                 havetoopen = True
                 self.ordernthreads[cthread]['manager'].rejected = False
-
             if havetoopen:
+                self.ordernthreads[cthread]['manager'].cleanOrders()
                 havetoopen = False
                 open_func()
-
             self.ordernthreads[cthread]['event'].clear()
 
-        time.sleep(1)
-        self.ordernthreads[cthread]['manager'].cleanOrders()
+        if self.auto_cancel:
+            time.sleep(1)
+            self.ordernthreads[cthread]['manager'].cleanOrders()
         self.ordernthreads[cthread] = dict(
             thread = Thread(target=self.order_managment),
             side = None,
@@ -301,7 +304,8 @@ class OrderBookConsole(OrderBook):
         self._bid_depth = None
         self._ask_depth = None
         self._last_ticker = None
-
+        self.publicClient = None
+        self.ticks = []
         self.user_orders = []
         self.user_fills = []
         self.user_order_change = []
@@ -315,6 +319,7 @@ class OrderBookConsole(OrderBook):
             #self.db.addCollection(collection=self._product)
             #self.db.addRunner()
             self.db.startAllRunner()
+        self.connectPublicClient()
 
     def on_message(self, message):
         super(OrderBookConsole, self).on_message(message)
@@ -344,7 +349,6 @@ class OrderBookConsole(OrderBook):
         #print ("Ordres en cour :", self.user_orders, "Ordres remplis :",
         #    self.user_fills, "Ordres changer :", self.user_order_change)
 
-
         self.message_recieved.set()
 
         if self._bid == bid and self._ask == ask and self._bid_depth == bid_depth and self._ask_depth == ask_depth:
@@ -359,6 +363,21 @@ class OrderBookConsole(OrderBook):
 
             #print('{} {} bid: {:.3f} @ {:.2f}  ask: {:.3f} @ {:.2f}'.format(
             #    dt.datetime.now(), self.product_id, bid_depth, bid, ask_depth, ask))
+
+        if self._last_ticker != self._current_ticker and self._current_ticker:
+            self.ticks.append(self._current_ticker)
+            self._last_ticker = self._current_ticker
+
+    def connectPublicClient(self):
+        self.publicClient = PublicClient(api_url="https://api.pro.coinbase.com")
+
+    def getHistorical(self):
+        if self.publicClient:
+            return self.publicClient.get_product_historic_rates(self.product_id,
+                 granularity=60)
+
+    def getTicks(self):
+        return self.ticks
 
     def addUserOrder(self, order_id):
         self.user_orders.append(order_id)
@@ -451,7 +470,8 @@ class threadsManager(object):
 
     def cleanOrders(self):
         while len(self.order) > 0:
-            self.cancel_managment(self.order[0]['id'])
+            if self.order[0]:
+                self.cancel_managment(self.order[0]['id'])
             self.order.pop(0)
 
     def cancelOrder(self):
