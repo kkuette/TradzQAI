@@ -1,7 +1,7 @@
 from ..cbpro import *
 import json
 
-import sys
+import sys, os
 import time
 import datetime as dt
 from copy import deepcopy
@@ -20,7 +20,7 @@ class cbprowrapper(object):
                  db=None,
                  max_orders=5,
                  max_request_per_sec=5,
-                 same_best_price=True):
+                 mode="maker"):
 
         self.key = key
         self.b64 = b64
@@ -29,6 +29,7 @@ class cbprowrapper(object):
         self.product_id = product_id
         self.db = db
         self.authClient = None
+        self.mode = mode
         self.maxthreads = max_orders
         self.maxRequestPerSec = max_request_per_sec
         self.spread = 0
@@ -43,7 +44,6 @@ class cbprowrapper(object):
         self.is_done = True
         self.bpfunc = None
         self.bestprice = 0
-        self.sameBestPrice = same_best_price
         self.requestTime = time.time()
         self.event = Event()
         self.event.clear()
@@ -64,8 +64,10 @@ class cbprowrapper(object):
         self.bpfunc = function
 
     def addOrder(self, side, volume):
-        if self.authClient:
+        if self.authClient and self.mode == "maker":
             self.orderManagment(side, volume)
+        elif self.authClient and self.mode == "taker":
+            self.takerManagment(side, volume)
         else:
             print ("We cannot open any orders, there is no client")
 
@@ -77,8 +79,9 @@ class cbprowrapper(object):
                 size = 0,
                 best_price = 0,
                 event = Event(),
-                manager = threadsManager(self.authClient,
-                    product_id=self.product_id),
+                manager = threadsManager(authClient=self.authClient,
+                    product_id=self.product_id,
+                    userorder=self.orderbook.addUserOrder),
                 is_busy = False
                 )
             )
@@ -89,6 +92,7 @@ class cbprowrapper(object):
         return False
 
     def getBestPrice(self, bids, asks):
+        #idx = 1
         idx = np.random.randint(low=1, high=30, size=1)[0]
         if self.ordernthreads[0]['side'] == "buy":
             return round(float(bids(idx)[idx-1][0]['price']), 2)
@@ -116,7 +120,8 @@ class cbprowrapper(object):
         self.ordernthreads[cthread]['event'].clear()
         self.ordernthreads[cthread]['manager'].setSize(self.ordernthreads[cthread]['size'])
         havetoopen = True
-        while self.ordernthreads[cthread]['is_busy']:
+        while self.ordernthreads[cthread]['is_busy'] and self.is_running:
+
             self.ordernthreads[cthread]['event'].wait()
             self.ordernthreads[cthread]['best_price'] = self.bpfunc(self.last_bids,
                 self.last_asks)
@@ -137,9 +142,6 @@ class cbprowrapper(object):
                 havetoopen = False
                 open_func()
 
-            if not self.is_running:
-                self.ordernthreads[cthread]['is_busy'] = False
-
             self.ordernthreads[cthread]['event'].clear()
 
         time.sleep(1)
@@ -151,15 +153,27 @@ class cbprowrapper(object):
             best_price = 0,
             event = Event(),
             manager = threadsManager(authClient=self.authClient,
-                product_id=self.product_id),
+                product_id=self.product_id,
+                userorder=self.orderbook.addUserOrder),
             is_busy = False
             )
-        if self.is_running:
-            self.oncthread -= 1
+        self.oncthread -= 1
+
+    def takerManagment(self, side, volume):
+        if self.orderbook and not self.orderbook.stop and self.authClient:
+            if side == 'buy':
+                self.authClient.buy(price=round(float(self.last_bids(1)[0][0]['price']), 2),
+                                    size=volume,
+                                    order_type='market',
+                                    product_id=self.product_id[0])
+            else:
+                self.authClient.sell(price=round(float(self.last_asks(1)[0][0]['price']), 2),
+                                    size=volume,
+                                    order_type='market',
+                                    product_id=self.product_id[0])
 
     def managerSelector(self, id=0, timeout=0):
-        if id == 2:
-            self.selector_id += 1
+        if id == 1:
             return
         elif timeout == self.maxthreads:
             return
@@ -179,6 +193,34 @@ class cbprowrapper(object):
     def closeManager(self, id):
         self.ordernthreads[i]['is_busy'] = False
 
+    def checkFills(self):
+        fills = self.orderbook.getUserFills()
+        if fills and self.oncthread > 0:
+            for idx in range(len(fills)):
+                for i in range(len(self.ordernthreads)):
+                    if self.ordernthreads[i]['is_busy']:
+                        if self.ordernthreads[i]['manager'].order[0]['id'] == \
+                            fills[idx]:
+                            self.ordernthreads[i]['is_busy'] = False
+                            self.ordernthreads[i]['event'].set()
+                            break
+            self.orderbook.DeleteFill(len(fills))
+
+    def checkChanges(self):
+        changes = self.orderbook.getUserOrderChange()
+        if changes and self.oncthread > 0:
+            for idx in range(len(changes)):
+                for i in range(len(self.ordernthreads)):
+                    if self.ordernthreads[i]['is_busy']:
+                        if self.ordernthreads[i]['manager'].order[0]['id'] == \
+                            changes[idx][0]:
+                            self.ordernthreads[i]['manager'].size -= float(changes[idx][1])
+                            if self.ordernthreads[i]['manager'].size < 0.001:
+                                self.ordernthreads[i]['is_busy'] = False
+                                self.ordernthreads[i]['event'].set()
+                            break
+            self.orderbook.DeleteChange(len(changes))
+
     def runOrderBook(self):
         while self.is_running:
             self.orderbook.start()
@@ -190,7 +232,6 @@ class cbprowrapper(object):
             except:
                 print ("\n -- websocket reconnexion -- \n")
                 self.connectOrderBook()
-        self.orderbook.close()
 
     def runAuthClient(self):
         self.last_asks = self.orderbook.get_nasks
@@ -198,25 +239,27 @@ class cbprowrapper(object):
         while self.is_running:
             if self.orderbook:
                 self.event.wait()
-                threads = 2 if self.oncthread >= 2 else self.oncthread
-                if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*(threads*2):
+                self.checkFills()
+                self.checkChanges()
+                if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*2:
                     self.managerSelector()
                     self.requestTime = time.time()
+                if self.is_running:
                     self.event.clear()
 
     def stop(self):
+        self.closeAllManagers()
         self.is_running = False
         self.event.set()
-        self.closeAllManagers()
         self.orderbook.stop = True
+
 
     def run(self):
         self.is_running = True
         if self.authClient:
             Thread(target=self.runAuthClient).start()
             self.buildNthread(n=self.maxthreads)
-        Thread(target=self.runOrderBook).start()
-
+        Thread(target=self.runOrderBook, daemon=True).start()
 
 class OrderBookConsole(OrderBook):
     ''' Logs real-time changes to the bid-ask spread to the console '''
@@ -231,6 +274,8 @@ class OrderBookConsole(OrderBook):
                  api_passphrase="",
                  channels=None):
 
+        #"wss://ws-feed-public.sandbox.pro.coinbase.com"
+
         super(OrderBookConsole, self).__init__(product_id=product_id,
             url=url, api_key=api_key, api_secret=api_secret,
             api_passphrase=api_passphrase, channels=channels)
@@ -244,6 +289,11 @@ class OrderBookConsole(OrderBook):
         self._bid_depth = None
         self._ask_depth = None
         self._last_ticker = None
+
+        self.user_orders = []
+        self.user_fills = []
+        self.user_order_change = []
+
         self.message_recieved = event
         if db:
             self.db.addDB(db='ticker')
@@ -264,6 +314,25 @@ class OrderBookConsole(OrderBook):
         ask = self.get_ask()
         asks = self.get_asks(ask)
         ask_depth = sum([a['size'] for a in asks])
+
+        msg_type = message['type']
+        if 'reason' in message:
+            msg_reason = message['reason']
+            if msg_reason == 'canceled' and msg_type == 'done':
+                if message['order_id'] in self.user_orders:
+                    self.deleteOrder(message['order_id'])
+            elif msg_reason == 'filled' and msg_type == 'done':
+                if message['order_id'] in self.user_orders:
+                    self.addFills(message['order_id'])
+                    self.deleteOrder(message['order_id'])
+        elif msg_type == 'match':
+            if message['maker_order_id'] in self.user_orders:
+                self.addOrderChange(message['maker_order_id'], message['size'])
+
+        #print ("Ordres en cour :", self.user_orders, "Ordres remplis :",
+        #    self.user_fills, "Ordres changer :", self.user_order_change)
+
+
         self.message_recieved.set()
 
         if self._bid == bid and self._ask == ask and self._bid_depth == bid_depth and self._ask_depth == ask_depth:
@@ -279,10 +348,47 @@ class OrderBookConsole(OrderBook):
             #print('{} {} bid: {:.3f} @ {:.2f}  ask: {:.3f} @ {:.2f}'.format(
             #    dt.datetime.now(), self.product_id, bid_depth, bid, ask_depth, ask))
 
+    def addUserOrder(self, order_id):
+        self.user_orders.append(order_id)
+        #print (self.user_orders)
+
+    def addFills(self, order_id):
+        self.user_fills.append(order_id)
+
+    def addOrderChange(self, order_id, size):
+        self.user_order_change.append([order_id, size])
+
+    def DeleteFill(self, l):
+        while len(self.user_fills) > 0 and \
+            len(self.user_fills) > (len(self.user_fills) - l):
+            self.user_fills.pop(0)
+
+    def DeleteChange(self, l):
+        while len(self.user_order_change) > 0 and \
+            len(self.user_order_change) > (len(self.user_order_change) - l):
+            self.user_order_change.pop(0)
+
+    def deleteOrder(self, order_id):
+        for idx in range(len(self.user_orders)):
+            if order_id == self.user_orders[idx]:
+                self.user_orders.pop(idx)
+                return
+
+    def getUserFills(self):
+        if len(self.user_fills) > 0:
+            return self.user_fills
+        else:
+            return None
+
+    def getUserOrderChange(self):
+        if len(self.user_order_change) > 0:
+            return self.user_order_change
+        else:
+            None
 
 class threadsManager(object):
 
-    def __init__(self, authClient=None, product_id=None):
+    def __init__(self, authClient=None, product_id=None, userorder=None):
 
         self.authClient = authClient
         self.product_id = product_id
@@ -294,6 +400,7 @@ class threadsManager(object):
         self.size = 0
         self.price = 0
         self.rejected = False
+        self.adduserorder = userorder
 
         self.bnthreads = deque(maxlen=self.maxthreads)
         self.snthreads = deque(maxlen=self.maxthreads)
@@ -353,14 +460,16 @@ class threadsManager(object):
                             order_type='limit',
                             product_id=self.product_id[0],
                             post_only=True)
-        if len(m) > 2:
+
+        if 'message' in m:
+            self.rejected = True
+        if 'status' in m:
             if m['status'] == "rejected":
                 self.rejected = True
             else:
                 self.rejected = False
                 self.order.append(m)
-        else:
-            self.rejected = True
+                self.adduserorder(m['id'])
 
         self.bnthreads[cthread] = dict(
             thread = Thread(target=self.buy),
@@ -377,14 +486,15 @@ class threadsManager(object):
                             product_id=self.product_id[0],
                             post_only=True)
 
-        if len(m) > 2:
+        if 'message' in m:
+            self.rejected = True
+        if 'status' in m:
             if m['status'] == "rejected":
                 self.rejected = True
             else:
                 self.rejected = False
                 self.order.append(m)
-        else:
-            self.rejected = True
+                self.adduserorder(m['id'])
 
         self.snthreads[cthread] =dict(
             thread = Thread(target=self.sell),
