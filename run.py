@@ -42,7 +42,6 @@ if __name__ == '__main__':
 
     elif args.build:
         from core import Local_session as Session
-        args.build = "PPO"
         session = Session(mode=args.mode, config=args.config, agent=args.build)
         session._stop()
 
