@@ -68,7 +68,8 @@ class Environnement(object):
 
     def close(self):
         self.stop = True
-        self.logger.stop()
+        if self.logger:
+            self.logger.stop()
         self.event.set()
 
     def get_network(self):
