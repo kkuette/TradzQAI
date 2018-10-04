@@ -42,6 +42,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   - [Tensorflow](https://github.com/tensorflow/tensorflow)
   - [Tensorforce](https://github.com/reinforceio/tensorforce)
   - [pyqtgraph](https://github.com/pyqtgraph/pyqtgraph)
+  - [coinbasepro-python](https://github.com/danpaquin/coinbasepro-python)
   - Pandas
   - Numpy
   - PyQt5
