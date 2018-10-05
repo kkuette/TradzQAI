@@ -76,7 +76,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
         session = Session(mode=args.mode, config=args.config)
         session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
                 product_id=product_id)
-        session.getApi().setBestPriceFunc(myfunc) # In this case were the function doesn't need any class init.
+        session.getApi().setBestPriceFunc(myfunc)
      ```
 
   - Do your own runner.
