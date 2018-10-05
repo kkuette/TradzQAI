@@ -2,6 +2,8 @@
 
 Trading environnement for RL agents, backtesting and training.
 
+Live session with [coinbasepro-python](https://github.com/danpaquin/coinbasepro-python) is finaly arrived !
+
 - Available sessions:
     - Local
         - 1M bar datasets any size.
@@ -34,7 +36,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
 ## Status
 
     Alpha in development
-        It should be ready soon for live trading with gdax API
+        Rework of Gui is on rails
 
 ## Getting Started
 
@@ -58,22 +60,33 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
     python run.py -h (Show usage)
     python run.py -b BUILD (to manually build config file, it build config files from default agent PPO)
     python run.py -g on (Display interface, it does not support live session)
-    python run.py -s live (for live session) # Not fully fonctionnal
+    python run.py -s live (for live session) 
     python run.py -m eval (for eval mode)
     python run.py -c config_dir/ # load config from directory, make sure you have agent, env and network json files in it
     python run.py (Run as default)
   ```
   When you run it for the first time, a config directory is created, you can change it to changes environnement settings and some agents settings.
   It save settings (env, agent, network) in a save directory, and create a new directory if make any changes.
+  
+  - Be aware, you have to find you own order making strategy. To do so you have to create a function and pass is to the api.
+    You can pass it by [this function](https://github.com/kkuette/TradzQAI/blob/master/API/api.py#L41)
+    ```python
+        from core import Local_session as Session
+        from mymodule import myfunc
+        session = Session(mode=args.mode, config=args.config)
+        session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
+                product_id=product_id)
+        session.getApi().setBestPriceFunc(myfunc) # In this case were the function doesn't need any class init.
+     ```
 
-  You can also do your own runner.
+  - Do your own runner.
   ```python
   from core import Local_session as Session
   session = Session() # Run with default values
   session.loadSession() # loading environnement, worker and agent
   session.start() # Start the session thread
   ```
-  Also, you are able to use the environnement only.
+  - Do your own worker.
   ```python
   from core import Local_env
   env = Local_env() # run with default values
@@ -93,3 +106,6 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
 ## Relevant project
   - [TradingBrain](https://github.com/Prediction-Machines/Trading-Brain)
   - [q-trader](https://github.com/edwardhdlu/q-trader)
+  
+### This project isn't perfect so keep this in mind.
+```THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.```
