@@ -11,14 +11,15 @@ class onpm(object):
         if not id:
             id = self.order_number
             self.order_number += 1
-        order = dict(
-            current_order = order,
-            id = id,
-            last_price = 0,
-            start_time = time.time()
-        )
-        self.orders.append(order)
-        if (time.time() - self.orders[id]['start_time']) / 60 >= 3:
+            ordr = dict(
+                current_order = order,
+                id = id,
+                last_price = 0,
+                start_time = time.time()
+            )
+            self.orders.append(ordr)
+        self.orders[id]['current_order'] = order
+        if (time.time() - self.orders[id]['start_time']) / 10 >= 1:
             cancel = True
         else:
             cancel = False

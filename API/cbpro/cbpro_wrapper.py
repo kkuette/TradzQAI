@@ -146,31 +146,30 @@ class cbprowrapper(object):
         id = None
         while self.ordernthreads[cthread]['is_busy'] and self.is_running:
             self.ordernthreads[cthread]['event'].wait()
-            if len(self.ordernthreads[cthread]['manager'].order) > 0:
-                self.ordernthreads[cthread]['best_price'], cancel, id = \
-                    self.bpfunc(self.last_bids, self.last_asks,
-                        self.ordernthreads[cthread]['manager'].order[0],
-                        self.ordernthreads[cthread]['side'], id)
+            self.ordernthreads[cthread]['best_price'], cancel, id = \
+                self.bpfunc(self.last_bids, self.last_asks,
+                    self.ordernthreads[cthread]['manager'].order,
+                    self.ordernthreads[cthread]['side'], id)
 
-                if not cancel:
-                    self.ordernthreads[cthread]['manager'].setBestPrice(self.ordernthreads[cthread]['best_price'])
-                    havetoopen = self.price_checking(self.ordernthreads[cthread]['best_price'],
-                        self.ordernthreads[cthread]['manager'].price)
-                    if self.ordernthreads[cthread]['manager'].rejected:
-                        havetoopen = True
-                        self.ordernthreads[cthread]['manager'].rejected = False
-                    if havetoopen:
-                        self.no_thread_used = False
-                        self.unused_manager = 0
-                        self.ordernthreads[cthread]['manager'].cleanOrders()
-                        havetoopen = False
-                        open_func()
-                    elif self.ordernthreads[cthread]['is_busy'] and self.is_running:
-                        self.unused_manager += 1
-                        self.managerSelector()
-                    self.ordernthreads[cthread]['event'].clear()
-                else:
-                    self.ordernthreads[cthread]['is_busy'] = False
+            if not cancel:
+                self.ordernthreads[cthread]['manager'].setBestPrice(self.ordernthreads[cthread]['best_price'])
+                havetoopen = self.price_checking(self.ordernthreads[cthread]['best_price'],
+                    self.ordernthreads[cthread]['manager'].price)
+                if self.ordernthreads[cthread]['manager'].rejected:
+                    havetoopen = True
+                    self.ordernthreads[cthread]['manager'].rejected = False
+                if havetoopen:
+                    self.no_thread_used = False
+                    self.unused_manager = 0
+                    self.ordernthreads[cthread]['manager'].cleanOrders()
+                    havetoopen = False
+                    open_func()
+                elif self.ordernthreads[cthread]['is_busy'] and self.is_running:
+                    self.unused_manager += 1
+                    self.managerSelector()
+                self.ordernthreads[cthread]['event'].clear()
+            else:
+                self.ordernthreads[cthread]['is_busy'] = False
 
         if self.auto_cancel or cancel:
             time.sleep(1)
