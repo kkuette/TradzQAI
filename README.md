@@ -68,8 +68,8 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   When you run it for the first time, a config directory is created, you can change it to changes environnement settings and some agents settings.
   It save settings (env, agent, network) in a save directory, and create a new directory if make any changes.
   
-  - Be aware, you have to find you own order making strategy. To do so you have to create a function and pass is to the api.
-    You can pass it by [this function](https://github.com/kkuette/TradzQAI/blob/master/API/api.py#L41)
+  - Do you own decision function for maker side.
+    For more info look at [this function](https://github.com/kkuette/TradzQAI/blob/master/API/api.py#L41)
     ```python
         from core import Local_session as Session
         from mymodule import myfunc
