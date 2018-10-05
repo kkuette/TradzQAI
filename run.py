@@ -3,6 +3,7 @@ import sys
 import time
 import datetime
 import argparse
+from core.environnement.base.order_n_price_managment import onpm
 
 # Hide TF loading logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -59,9 +60,11 @@ if __name__ == '__main__':
             session = Session(mode=args.mode, config=args.config)
         else:
             from core import Live_session as Session
+            pm = onpm()
             session = Session(mode=args.mode, config=args.config)
             session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
                 product_id=product_id)
+            session.getApi().setBestPriceFunc(pm.bestPriceFunc)
         session.setAgent(device=device)
         session.loadSession()
         session.start()
