@@ -1,5 +1,4 @@
-from core import Local_Worker
-from core import Local_env
+from core import Local_Worker, Local_env
 from threading import Thread
 
 from tools import *

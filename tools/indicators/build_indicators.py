@@ -72,7 +72,6 @@ class Indicators():
             raise ValueError("No indicators to build.")
         indicators = pd.DataFrame(columns=self.names)
         for idx in self.build_func:
-            print (idx[1])
             if "MACD" in idx[1]:
                 indicators[idx[1]] = idx[0](data, idx[2][0], idx[2][1])
             else:

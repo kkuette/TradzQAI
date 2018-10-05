@@ -76,7 +76,7 @@ class Api(object):
     def sell(self, volume):
         self._api.addOrder("sell", volume)
 
-    def stop(self):
+    def close(self):
         self._api.stop()
 
     def start(self):

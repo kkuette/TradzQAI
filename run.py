@@ -10,6 +10,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 agent = "PPO"
 device = "/cpu:0"
 
+passphrase = ''
+key = ''
+b64 = ''
+url = ''
+
+product_id = ['BTC-EUR']
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="TradzQAI, all model configuration are in conf.cfg")
@@ -23,7 +31,6 @@ if __name__ == '__main__':
 
     if 'on' in args.gui:
         #raise NotImplementedError("gui isnt fonctionnal with session yet")
-
         import qdarkstyle
         from PyQt5 import QtGui
         from PyQt5.QtWidgets import QApplication
@@ -33,6 +40,7 @@ if __name__ == '__main__':
             from core import Local_session as Session
         else:
             from core import Live_session as Session
+            raise NotImplementedError("it gonna be available soon")
 
         app = QApplication(sys.argv)
         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -42,22 +50,25 @@ if __name__ == '__main__':
 
     elif args.build:
         from core import Local_session as Session
-        session = Session(mode=args.mode, config=args.config, agent=args.build)
+        session = Session(agent=args.build)
         session._stop()
 
     else:
         if "local" in args.session:
             from core import Local_session as Session
+            session = Session(mode=args.mode, config=args.config)
         else:
             from core import Live_session as Session
-        session = Session(mode=args.mode, config=args.config)
+            session = Session(mode=args.mode, config=args.config)
+            session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
+                product_id=product_id)
         session.setAgent(device=device)
         session.loadSession()
         session.start()
         try:
             while not session.env.stop:
                 time.sleep(1)
-            session.stop()
         except:
-            session.stop()
+            pass
+        session.stop()
         sys.exit(0)

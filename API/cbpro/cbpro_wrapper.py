@@ -111,7 +111,7 @@ class cbprowrapper(object):
         return False
 
     def getBestPrice(self, bids, asks):
-        idx = 5
+        idx = 1
         #idx = np.random.randint(low=1, high=30, size=1)[0]
         if self.ordernthreads[0]['side'] == "buy":
             return round(float(bids(idx)[idx-1][0]['price']), 2)
@@ -251,9 +251,6 @@ class cbprowrapper(object):
                     time.sleep(1)
             except KeyboardInterrupt:
                 pass
-            except:
-                print ("\n -- websocket reconnexion -- \n")
-                self.connectOrderBook()
 
     def runAuthClient(self):
         self.last_asks = self.orderbook.get_nasks
@@ -283,8 +280,10 @@ class cbprowrapper(object):
             Thread(target=self.runAuthClient).start()
             self.buildNthread(n=self.maxthreads)
             for order in self.authClient.get_orders():
-                self.orderManagment(order['side'], order['size'], order=order,
-                    price=order['price'])
+                print (order)
+                if not 'message' in order:
+                    self.orderManagment(order['side'], order['size'],
+                        order=order, price=order['price'])
         Thread(target=self.runOrderBook, daemon=True).start()
 
 class OrderBookConsole(OrderBook):
@@ -316,6 +315,7 @@ class OrderBookConsole(OrderBook):
         self._ask_depth = None
         self._last_ticker = None
         self.publicClient = None
+        self.ticks_since_last_call = 0
         self.ticks = []
         self.user_orders = []
         self.user_fills = []
@@ -378,6 +378,8 @@ class OrderBookConsole(OrderBook):
         if self._last_ticker != self._current_ticker and self._current_ticker:
             self.ticks.append(self._current_ticker)
             self._last_ticker = self._current_ticker
+            self.ticks_since_last_call += 1
+            #print (json.dumps(self._last_ticker, indent=4))
 
     def connectPublicClient(self):
         self.publicClient = PublicClient(api_url="https://api.pro.coinbase.com")
@@ -388,11 +390,12 @@ class OrderBookConsole(OrderBook):
                  granularity=60)
 
     def getTicks(self):
-        return self.ticks
+        tslc = self.ticks_since_last_call
+        self.ticks_since_last_call = 0
+        return self.ticks, tslc
 
     def addUserOrder(self, order_id):
         self.user_orders.append(order_id)
-        #print (self.user_orders)
 
     def addFills(self, order_id):
         self.user_fills.append(order_id)
@@ -434,7 +437,7 @@ class threadsManager(object):
 
         self.authClient = authClient
         self.product_id = product_id
-        self.maxthreads = 100
+        self.maxthreads = 10
         self.lastb_thread = 0
         self.lasts_thread = 0
         self.lastc_thread = 0

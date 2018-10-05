@@ -10,6 +10,7 @@ from tqdm import tqdm, trange
 import os
 import sys
 import time
+from threading import Event
 
 class Environnement(object):
 
@@ -49,6 +50,8 @@ class Environnement(object):
         self.new_episode = False
         self.closed = False
         self.stop = False
+        self.event = Event()
+        self.event.clear()
 
         self.lst_act = deque(maxlen=1000)
         self.lst_reward = deque(maxlen=1000)
@@ -133,6 +136,17 @@ class Environnement(object):
         for name, value in env['risk_managment'].items():
             self.wallet.risk_managment[name] = value
         self.wallet.init_default()
+
+    def get_agent_settings(self):
+        if self.model_name in self.agents:
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore",category=FutureWarning)
+                tmp_agent = getattr(__import__('agents'), self.model_name)
+        else:
+            raise ValueError('could not import %s' % self.model_name)
+
+        return tmp_agent.get_specs(env=self)
 
     def _pause(self):
         self.pause = 1

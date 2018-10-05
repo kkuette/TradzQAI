@@ -44,9 +44,7 @@ class Local_env(Environnement):
 
         self.mode = mode
         self._name = self.mode
-        self.event = Event()
-        self.event.clear()
-
+    
         self.wallet = self.contracts.getWallet()
         self.inventory = self.contracts.getInventory()
         self.saver = Saver()
@@ -110,17 +108,6 @@ class Local_env(Environnement):
         self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
         self.len_data = len(self.data) - 1
         self.check_dates()
-
-    def get_agent_settings(self):
-        if self.model_name in self.agents:
-            import warnings
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore",category=FutureWarning)
-                tmp_agent = getattr(__import__('agents'), self.model_name)
-        else:
-            raise ValueError('could not import %s' % self.model_name)
-
-        return tmp_agent.get_specs(env=self)
 
     def get_env_settings(self):
         self.contract_settings = self.contracts.getSettings()

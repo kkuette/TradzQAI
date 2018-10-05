@@ -180,7 +180,9 @@ class Inventory(object):
                     Fee = env.wallet.calc_fees(env.wallet.risk_managment['max_order_size']\
                         * env.price['buy'] * env.contract_settings['contract_size'])
                 )
-                self.inventory.append(buy)
+                self.inventory.append(env.price['buy'], env.contract_settings['contract_size'])
+                if env.api:
+                    env.api.buy(env.contract_settings['contract_size'])
             elif POS_SELL != -1:# Close order in inventory
                 '''Selling order from inventory list
                 Calc profit and total profit
@@ -193,6 +195,8 @@ class Inventory(object):
                 self.manage_trade(env, profit, fee, POS_SELL)
                 self.save_last_closing(POS_SELL)
                 self.add_last_trade(env, fee)
+                if env.api:
+                    env.api.buy(env.contract_settings['contract_size'])
             else:
                 env.reward['current'] = 0
 
@@ -210,6 +214,8 @@ class Inventory(object):
                         * env.price['sell'] * env.contract_settings['contract_size'])
                 )
                 self.inventory.append(sell)
+                if env.api:
+                    env.api.sell(env.contract_settings['contract_size'])
             elif POS_BUY != -1:# Close order in inventory
                 '''Selling order from inventory list
                 Calc profit and total profit
@@ -222,6 +228,8 @@ class Inventory(object):
                 self.manage_trade(env, profit, fee, POS_BUY)
                 self.save_last_closing(POS_BUY)
                 self.add_last_trade(env, fee)
+                if env.api:
+                    env.api.sell(env.contract_settings['contract_size'])
             else:
                 env.reward['current'] = 0
         else: # Hold

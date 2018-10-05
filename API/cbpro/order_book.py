@@ -43,11 +43,11 @@ class OrderBook(WebsocketClient):
 
     def on_open(self):
         self._sequence = -1
-        print("-- Subscribed to OrderBook! --\n")
+        #print("-- Subscribed to OrderBook! --\n")
 
     def on_close(self):
         self.is_done = False
-        print("\n-- OrderBook Socket Closed! --")
+        #print("\n-- OrderBook Socket Closed! --")
 
     def reset_book(self):
         self._asks = SortedDict()
