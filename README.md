@@ -36,7 +36,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
 ## Status
 
     Alpha in development
-        Rework of Gui is on rails
+        GUI rework on track
 
 ## Getting Started
 
