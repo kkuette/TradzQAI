@@ -180,7 +180,7 @@ class Inventory(object):
                     Fee = env.wallet.calc_fees(env.wallet.risk_managment['max_order_size']\
                         * env.price['buy'] * env.contract_settings['contract_size'])
                 )
-                self.inventory.append(env.price['buy'], env.contract_settings['contract_size'])
+                self.inventory.append(buy)
                 if env.api:
                     env.api.buy(env.contract_settings['contract_size'])
             elif POS_SELL != -1:# Close order in inventory
