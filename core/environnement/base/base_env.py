@@ -41,6 +41,7 @@ class Environnement(object):
 
         self.actions = 3
         self.step_left = 0
+        self.api = None
         self.pause = 0
         self.action = None
         self.start_t = 0

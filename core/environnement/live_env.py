@@ -193,7 +193,6 @@ class Live_env(Environnement):
             else:
                 self.action = 1
 
-
         self.wallet.manage_wallet(self.inventory.get_inventory(), self.price,
                             self.contract_settings)
         if self.current_step['step'] > 0:
