@@ -66,6 +66,7 @@ class Live_env(Environnement):
         else:
             raise ValueError("Contract type does not exist")
         self.api.start()
+        self.api.setMaxOrders(self.wallet.risk_managment['max_pos'])
         acc = self.api.getAccount()
         if not 'message' in acc:
             self.settings['capital'] = acc['available']

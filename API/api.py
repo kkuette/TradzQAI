@@ -50,6 +50,9 @@ class Api(object):
         """
         self._api.setBestPriceFunc(func)
 
+    def setMaxOrders(self, max_orders):
+        self._api.setMaxOrders(max_orders)
+
     def getAPI(self):
         return self._api
 
