@@ -235,7 +235,7 @@ class OrderBook(WebsocketClient):
         return self._asks.peekitem(0)[0]
 
     def get_nasks(self, n):
-        return [self.get_asks(self._asks.peekitem(n)[0]) for i in range(n)]
+        return [self.get_asks(self._asks.peekitem(n)[0]) for i in range(n+1)]
 
     def get_asks(self, price):
         return self._asks.get(price)
@@ -250,7 +250,7 @@ class OrderBook(WebsocketClient):
         return self._bids.peekitem(-1)[0]
 
     def get_nbids(self, n):
-        return [self.get_bids(self._bids.peekitem(-i)[0]) for i in range(1, n+1)]
+        return [self.get_bids(self._bids.peekitem(-(i+1))[0]) for i in range(n+1)]
 
     def get_bids(self, price):
         return self._bids.get(price)
