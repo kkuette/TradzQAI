@@ -182,7 +182,10 @@ class Wallet(object):
 
     def manage_exposure(self, contract_settings):
         self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
-        max_order_valid = self.risk_managment['capital_exposure'] // (contract_settings['contract_size'] * (contract_settings['contract_price'] * contract_settings['pip_value']))
+        try:
+            max_order_valid = self.risk_managment['capital_exposure'] // (contract_settings['contract_size'] * (contract_settings['contract_price'] * contract_settings['pip_value']))
+        except:
+            max_order_valid = 0
         #tqdm.write(str(max_order_valid))
         if max_order_valid <= self.risk_managment['max_pos']:
             self.risk_managment['current_max_pos'] = max_order_valid
@@ -213,5 +216,7 @@ class Wallet(object):
             raise ValueError("Your contract size {:.4f} is too small, or you cannot afford any contract max pos : {}. Please check your settings".format(size, idx))
         #elif size < 1.0:
             #return size
+        elif size < self.min_size:
+            return 0
         else:
             return size
