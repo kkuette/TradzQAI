@@ -47,6 +47,9 @@ class Api(object):
                         return: list each row is a list filled with dict
                 last asks: function that take a int (depth)
                         return: list each row is a list filled with dict
+                order: get all current order from the order manager (dict)
+                side: check the side of the order manager (str)
+                id: indentify your current order manager with it (int)
         """
         self._api.setBestPriceFunc(func)
 
