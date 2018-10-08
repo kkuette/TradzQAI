@@ -58,7 +58,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   ```
   Usage:
     python run.py -h (Show usage)
-    python run.py -b BUILD (to manually build config file, it build config files from default agent PPO)
+    python run.py -b agent_name (to manually build config file, it build config files from agent, default PPO)
     python run.py -g on (Display interface, it does not support live session)
     python run.py -s live (for live session) 
     python run.py -m eval (for eval mode)
