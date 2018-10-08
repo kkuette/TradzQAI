@@ -102,6 +102,109 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
       env.logger._running = False #Close the logger thread
       break
   ```
+  - How to use networks.
+    - You have to define your input to fit with columns name of your datasets, it allow you to do complex network like this :
+```json
+[
+  [
+    {
+            "names": [
+                "Price"
+            ],
+            "type": "input"
+        },
+        {
+            "activation": "relu",
+            "size": 8,
+            "type": "dense"
+        },
+        {
+            "activation": "relu",
+            "size": 8,
+            "type": "dense"
+        },
+        {
+            "name": "pricenet",
+            "type": "output"
+        }
+    ],
+    [
+        {
+            "names": [
+                "Volume"
+            ],
+            "type": "input"
+        },
+        {
+            "activation": "relu",
+            "size": 8,
+            "type": "dense"
+        },
+        {
+            "activation": "relu",
+            "size": 8,
+            "type": "dense"
+        },
+        {
+            "name": "volnet",
+            "type": "output"
+        }
+    ],
+    [
+        {
+            "names": [
+                "pricenet",
+                "volnet"
+            ],
+            "type": "input"
+        },
+        {
+            "activation": "relu",
+            "size": 64,
+            "type": "dense"
+        },
+        {
+            "activation": "relu",
+            "size": 32,
+            "type": "dense"
+        },
+        {
+            "activation": "relu",
+            "size": 8,
+            "type": "dense"
+        },
+        {
+            "name": "prediction",
+            "type": "output"
+        }
+    ]
+]
+```
+
+      - Take care, if you use a basic network don't forget to use input like this :
+```json
+[
+    {
+      "names": [
+          "Price",
+          "Volume"
+      ],
+      "type": "input"
+  },
+  {
+      "activation": "relu",
+      "size": 8,
+      "type": "dense"
+  },
+  {
+      "activation": "relu",
+      "size": 8,
+      "type": "dense"
+    }
+]
+```
+
+        
 
 ## Relevant project
   - [TradingBrain](https://github.com/Prediction-Machines/Trading-Brain)
