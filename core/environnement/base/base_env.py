@@ -16,7 +16,6 @@ class Environnement(object):
 
     def __init__(self, gui):
 
-        #self._name = os.path.basename(__file__).replace(".py", "")
         self.name = "TradzQAI"
         self.version = "v0.2"
         self.v_state = "Alpha"
@@ -47,6 +46,7 @@ class Environnement(object):
         self.start_t = 0
         self.loop_t = 0
         self.mod_ordr = False
+        self._api = False
         self.day_changed = False
         self.new_episode = False
         self.closed = False
@@ -71,53 +71,18 @@ class Environnement(object):
         self.tensorOCHL = [[] for _ in range(4)]
 
     def get_network(self):
-
+        '''
         network = [dict(type='dense', size=64, activation='relu'),
                    dict(type='dense', size=64, activation='relu'),
                    dict(type='dense', size=64, activation='relu')]
-
         '''
-
-        network = [dict(
-                type = "conv1d",
-                size = 32,
-                window = 10,
-                stride = 1,
-                padding = "SAME"
-            ),
-            #dict(
-            #    type="pool2d",
-            #    pooling_type='max',
-            #    window=4,
-            #    stride=1,
-            #    padding='SAME'
-            #),
-            dict(
-                type = "conv1d",
-                size = 32,
-                window = 5,
-                stride = 1,
-                padding = "SAME"
-            ),
-            #dict(
-            #    type="pool2d",
-            #    pooling_type='max',
-            #    window=2,
-            #    stride=1,
-            #    padding='SAME'
-            #),
-            dict(
-                type = "flatten"
-            ),
-            dict(
-                type="dense",
-                size=256,
-                activation="relu",
-            )
+        network = [
+            [
+                dict(type='input', names=['Price', 'Volume']),
+                dict(type='dense', size=8, activation="relu"),
+                dict(type='dense', size=8, activation="relu")
+            ]
         ]
-        '''
-
-
 
         return network
 
@@ -229,7 +194,6 @@ class Environnement(object):
             if self._date[idx - 1][7] != self._date[idx][7]:
                 break
         self.step_left = idx - self.current_step['step'] + 1
-
 
     def manage_date(self):
         self.day_changed = False
@@ -430,6 +394,16 @@ class Environnement(object):
         self.logger._add("Average daily reward : " + str('{:.3f}'.format(self.avg_reward(self.lst_reward_daily, 0))), self._name)
         self.logger._add("Total profit : " + str(round(self.wallet.profit['total'], 3)), self._name)
         self.logger._add("Total trade : " + str(self.trade['loss'] + self.trade['win'] + self.trade['draw']), self._name)
+        if len(self.inventory.pos_duration) == 0:
+            self.inventory.pos_duration.append(0)
+        self.logger._add("Average trade time : " + str(round(np.average(np.array(self.inventory.pos_duration)), 2)), self._name)
+        self.logger._add("Max trade time : " + str(np.amax(np.array(self.inventory.pos_duration))), self._name)
+        self.logger._add("Min trade time : " + str(np.amin(np.array(self.inventory.pos_duration))),self._name)
+        if len(self.pos_delay['all']) == 0:
+            self.pos_delay['all'].append(0)
+        self.logger._add("Average trade delay : " + str(round(np.average(np.array(self.pos_delay['all'])), 2)), self._name)
+        self.logger._add("Max trade delay : " + str(np.amax(np.array(self.pos_delay['all']))),self._name)
+        self.logger._add("Min trade delay : " + str(np.amin(np.array(self.pos_delay['all']))),self._name)
         self.logger._add("Sharp ratio : " + str('{:.3f}'.format(self.wallet.historic['sharp_ratio'][self.current_step['episode'] - 1])), self._name)
         self.logger._add("Mean return : " + str('{:.3f}'.format(self.wallet.historic['mean_return'][self.current_step['episode'] - 1])), self._name)
         self.logger._add("Max Drawdown : " + str('{:.3f}'.format(self.wallet.historic['max_drawdown'][self.current_step['episode'] - 1])), self._name)

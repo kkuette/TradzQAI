@@ -44,7 +44,7 @@ class Local_env(Environnement):
 
         self.mode = mode
         self._name = self.mode
-    
+
         self.wallet = self.contracts.getWallet()
         self.inventory = self.contracts.getInventory()
         self.saver = Saver()
@@ -195,6 +195,8 @@ class Local_env(Environnement):
 
         self.wallet.manage_wallet(self.inventory.get_inventory(), self.price,
                             self.contract_settings)
+        if len(self.inventory.get_inventory()) == 0:
+            self.pos_delay['current'] += 1
         if self.current_step['step'] > 0:
             self.contract_settings['contract_price'] = self.contracts.getContractPrice(self.data[self.current_step['step']])
             if self.is_crypto:
@@ -204,7 +206,7 @@ class Local_env(Environnement):
         #self.train_out.append(act_processing(self.action))
 
         self.r_pnl.append(self.wallet.settings['GL_profit'])
-        self.reward['current'] += round(self.rewa(), 4)
+        self.reward['current'] += round(self.rewa(), 2)
         #self.reward['current'] += (self.r_pnl[self.current_step['step']] - self.r_av[self.current_step['step']])
         self.wallet.profit['daily'] += self.wallet.profit['current']
         self.wallet.profit['total'] += self.wallet.profit['current']
@@ -281,6 +283,10 @@ class Local_env(Environnement):
         self.date['total_day'] = 1
         self.date['total_month'] = 1
         self.date['total_year'] = 1
+        self.pos_delay = dict(
+            current = 0,
+            all = []
+        )
 
         self.r_pnl = []
         self.r_av = []
