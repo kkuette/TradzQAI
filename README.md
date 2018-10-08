@@ -103,7 +103,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
       break
   ```
   - How to use networks.
-    - You have to define your input to fit with columns name of your datasets, it allow you to do complex network like this :
+    - You have to define your input to fit with columns name of your datasets, it will automaticaly it grab input from network and compare it with your dataset columns in [getState](https://github.com/kkuette/TradzQAI/blob/master/tools/utils.py#L326) function, it allow you to do complex network like this :
         ```json
         [
             [
@@ -128,12 +128,11 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
         ]
         ```
 
-      - Take care, if you use a basic network don't forget to use input like this :
+      - Simple network are handled as well without defining any input:
       ```json
         [
-            {"names": ["Price", "Volume"], "type": "input"},
-            {"activation": "relu", "size": 8, "type": "dense"},
-            {"activation": "relu", "size": 8, "type": "dense"}
+            {"activation": "relu", "size": 64, "type": "dense"},
+            {"activation": "relu", "size": 64, "type": "dense"}
         ]
         ```
 
