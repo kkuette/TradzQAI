@@ -141,7 +141,7 @@ class dataLoader(Thread):
 
             elif len_row == 9 and ',' in sep:
                 vec = row['Price'].copy(deep=True)
-                row.drop(row.columns[[0, 5, 6, 7, 8]], axis=1, inplace=True)
+                row.drop(row.columns[[0,3,4,5,6,7,8]], axis=1, inplace=True)
 
             elif len_row == 6 and ';' in sep:
                 vec = row['Close'].copy(deep=True)
@@ -324,6 +324,7 @@ def sigmoid(x):
 
 # returns an an n-day state representation ending at time t
 def getState(data, t, n, fn_process=sigmoid):
+        datas = dict()
         d = t - n + 1
         temp = []
         for col in data.columns:
@@ -335,11 +336,13 @@ def getState(data, t, n, fn_process=sigmoid):
                     res.append(fn_process(block[i + 1] - block[i]))
                 else:
                     res.append(block[i])
-            temp.append(res)
+            datas[col] = np.array(res)
+        '''
         datas = []
         for idx in range(len(temp[0])):
             datas.append([temp[i][idx] for i in range(len(data.columns))])
-        return np.array(datas)
+        '''
+        return datas
 
 def act_processing(act):
     if act == 1:
