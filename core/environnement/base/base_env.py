@@ -67,8 +67,37 @@ class Environnement(object):
         self.offset = 0
 
         self.historical = []
+        self.input_names = []
 
         self.tensorOCHL = [[] for _ in range(4)]
+
+    def get_input_names(self):
+        ignore = []
+        if self.settings['network']:
+            for block in self.settings['network']:
+                if isinstance(block, list):
+                    for i in block:
+                        for key, value in i.items():
+                            if 'names' in key:
+                                for v in value:
+                                    self.input_names.append(v)
+                            elif 'name' in key:
+                                for v in value:
+                                    ignore.append(value)
+                else:
+                    for key, value in block.items():
+                        if 'names' in key:
+                            for v in value:
+                                self.input_names.append(v)
+                        elif 'name' in key:
+                            for v in value:
+                                ignore.append(value)
+        for v in ignore:
+            while v in self.input_names:
+                for i in range(len(self.input_names)):
+                    if v == self.input_names[i]:
+                        self.input_names.pop(i)
+                        break
 
     def get_network(self):
         '''

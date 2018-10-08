@@ -14,14 +14,12 @@ class Agent(object):
                 os.mkdir(self.env.saver.model_directory+ "/model")
             self.env.saver.model_file_path = self.env.saver.model_directory + "/model/" + self.env.saver.model_file_name
 
-        state = dict()
-        for key, value in self.env.state.items():
-            state[key] = dict(type="float", shape=value.shape)
+
 
         self.agent = Agents.from_spec(
             self.env.settings['agent'],
             kwargs=dict(
-                states=state,
+                states=self.env.states,
                 actions=dict(type='int', num_actions=self.env.actions),
                 network=self.env.settings['network'],
                 device=device

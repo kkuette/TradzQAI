@@ -68,6 +68,9 @@ class Local_env(Environnement):
                 self.contracts = Classic()
             else:
                 raise ValueError("Contract type does not exist")
+            self.get_input_names()
+            if len(self.input_names) == 0:
+                self.input_names = None
             self.model_dir = self.model_name
             self.saver._check(self.model_dir, self.settings)
             self.dl = dataLoader(directory=self.dataDirectory, mode=self.mode)
@@ -82,7 +85,14 @@ class Local_env(Environnement):
             self.dl.loadFile()
 
             self.data, self.raw, self._date = self.dl.getData(), self.dl.getRaw(), self.dl.getTime()
-            self.state = getState(self.raw, 0, self.window_size + 1)
+            self.state = getState(self.raw, 0, self.window_size + 1,
+                valid_columns=self.input_names)
+            if self.input_names:
+                self.states = dict()
+                for key, value in self.state.items():
+                    self.states[key] = dict(type="float", shape=value.shape)
+            else:
+                self.states = dict(type='float', shape=self.state.shape)
             for crypt in self.crypto:
                 if crypt in (self.dl.files[0].split("/"))[len(self.dl.files[0].split("/")) - 1].split("_"):
                     self.is_crypto = True
@@ -217,7 +227,7 @@ class Local_env(Environnement):
             self.def_act()
             self.chart_preprocessing(self.data[self.current_step['step']])
         self.state = getState(self.raw, self.current_step['step'] + 1,
-                            self.window_size + 1)
+                            self.window_size + 1, valid_columns=self.input_names)
         self.wallet.daily_process()
         '''
         tqdm.write("Reward: " + str(self.reward['current']) +
@@ -316,7 +326,8 @@ class Local_env(Environnement):
         self.inventory.reset()
         self.current_step['step'] = -1
         self.new_episode = True
-        self.state = getState(self.raw, 0, self.window_size + 1)
+        self.state = getState(self.raw, 0, self.window_size + 1,
+            valid_columns=self.input_names)
         self.current_step['episode'] += 1
         self.logger._add("Starting episode : " + str(self.current_step['episode']),
                     self._name)

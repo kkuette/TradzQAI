@@ -141,7 +141,7 @@ class dataLoader(Thread):
 
             elif len_row == 9 and ',' in sep:
                 vec = row['Price'].copy(deep=True)
-                row.drop(row.columns[[0,3,4,5,6,7,8]], axis=1, inplace=True)
+                row.drop(row.columns[[0]], axis=1, inplace=True)
 
             elif len_row == 6 and ';' in sep:
                 vec = row['Close'].copy(deep=True)
@@ -323,25 +323,37 @@ def sigmoid(x):
     return 1 / (1 + exp)
 
 # returns an an n-day state representation ending at time t
-def getState(data, t, n, fn_process=sigmoid):
+def getState(data, t, n, fn_process=sigmoid, valid_columns=None):
         datas = dict()
         d = t - n + 1
         temp = []
         for col in data.columns:
-            tmp = np.asarray(data[col])
-            block = tmp[d:t + 1] if d >= 0 else np.concatenate([-d * [tmp[0]]] + [tmp[0:t + 1]])
-            res = []
-            for i in range(n - 1):
-                if ("Price" or "EMA") in col:
-                    res.append(fn_process(block[i + 1] - block[i]))
-                else:
-                    res.append(block[i])
-            datas[col] = np.array(res)
-        '''
-        datas = []
-        for idx in range(len(temp[0])):
-            datas.append([temp[i][idx] for i in range(len(data.columns))])
-        '''
+            if valid_columns:
+                if col in valid_columns:
+                    tmp = np.asarray(data[col])
+                    block = tmp[d:t + 1] if d >= 0 else np.concatenate([-d * [tmp[0]]] + [tmp[0:t + 1]])
+                    res = []
+                    for i in range(n - 1):
+                        if ("Price" or "EMA") in col:
+                            res.append(fn_process(block[i + 1] - block[i]))
+                        else:
+                            res.append(block[i])
+                    datas[col] = np.array(res)
+            else:
+                tmp = np.asarray(data[col])
+                block = tmp[d:t + 1] if d >= 0 else np.concatenate([-d * [tmp[0]]] + [tmp[0:t + 1]])
+                res = []
+                for i in range(n - 1):
+                    if ("Price" or "EMA") in col:
+                        res.append(fn_process(block[i + 1] - block[i]))
+                    else:
+                        res.append(block[i])
+                temp.append(res)
+        if not valid_columns:
+            datas = []
+            for idx in range(len(temp[0])):
+                datas.append([temp[i][idx] for i in range(len(data.columns))])
+            datas = np.array(datas)
         return datas
 
 def act_processing(act):
