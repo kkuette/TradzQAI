@@ -50,6 +50,11 @@ class Api(object):
                 order: get all current order from the order manager (dict)
                 side: check the side of the order manager (str)
                 id: indentify your current order manager with it (int)
+
+            return:
+                price: float
+                cancel : bool
+                id : int
         """
         self._api.setBestPriceFunc(func)
 
