@@ -131,9 +131,9 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
       - Take care, if you use a basic network don't forget to use input like this :
       ```json
         [
-        {"names": ["Price", "Volume"], "type": "input"},
-        {"activation": "relu", "size": 8, "type": "dense"},
-        {"activation": "relu", "size": 8, "type": "dense"}
+            {"names": ["Price", "Volume"], "type": "input"},
+            {"activation": "relu", "size": 8, "type": "dense"},
+            {"activation": "relu", "size": 8, "type": "dense"}
         ]
         ```
 
