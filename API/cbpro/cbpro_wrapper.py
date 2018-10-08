@@ -146,11 +146,12 @@ class cbprowrapper(object):
         id = None
         while self.ordernthreads[cthread]['is_busy'] and self.is_running:
             self.ordernthreads[cthread]['event'].wait()
+            if self.ordernthreads[cthread]['manager'].no_funds:
+                self.ordernthreads[cthread]['is_busy'] = False
             self.ordernthreads[cthread]['best_price'], cancel, id = \
                 self.bpfunc(self.last_bids, self.last_asks,
                     self.ordernthreads[cthread]['manager'].order,
                     self.ordernthreads[cthread]['side'], id)
-
             if not cancel:
                 self.ordernthreads[cthread]['manager'].setBestPrice(self.ordernthreads[cthread]['best_price'])
                 havetoopen = self.price_checking(self.ordernthreads[cthread]['best_price'],
@@ -170,7 +171,6 @@ class cbprowrapper(object):
                 self.ordernthreads[cthread]['event'].clear()
             else:
                 self.ordernthreads[cthread]['is_busy'] = False
-
         if self.auto_cancel or cancel:
             time.sleep(1)
             self.ordernthreads[cthread]['manager'].cleanOrders()
@@ -276,8 +276,8 @@ class cbprowrapper(object):
                     self.event.clear()
 
     def stop(self):
-        self.closeAllManagers()
         self.is_running = False
+        self.closeAllManagers()
         self.event.set()
         self.orderbook.stop = True
 
@@ -288,7 +288,6 @@ class cbprowrapper(object):
             Thread(target=self.runAuthClient).start()
             self.buildNthread(n=self.maxthreads)
             for order in self.authClient.get_orders():
-                print (order)
                 if not 'message' in order:
                     self.orderManagment(order['side'], order['size'],
                         order=order, price=order['price'])
@@ -453,6 +452,7 @@ class threadsManager(object):
         self.size = 0
         self.price = 0
         self.rejected = False
+        self.no_funds = False
         self.adduserorder = userorder
 
         self.bnthreads = deque(maxlen=self.maxthreads)
@@ -514,9 +514,10 @@ class threadsManager(object):
                             order_type='limit',
                             product_id=self.product_id[0],
                             post_only=True)
-
+        print (m)
         if 'message' in m:
-            self.rejected = True
+            if 'funds' in m['message']:
+                self.no_funds = True
         if 'status' in m:
             if m['status'] == "rejected":
                 self.rejected = True
@@ -539,9 +540,11 @@ class threadsManager(object):
                             order_type='limit',
                             product_id=self.product_id[0],
                             post_only=True)
-
+        print (m)
         if 'message' in m:
-            self.rejected = True
+            if 'funds' in m['message']:
+                self.no_funds = True
+
         if 'status' in m:
             if m['status'] == "rejected":
                 self.rejected = True
