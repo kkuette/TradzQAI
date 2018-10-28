@@ -7,55 +7,79 @@ from threading import Thread, Event
 from collections import deque
 from datetime import datetime
 
+class order:
+
+    def __init__(self, _id=None):
+        ''' 
+        Order class
+            args:
+                _id: (int) order id
+        '''
+
+        self.price = 0
+        self.side = None
+        self.size = 0
+        self.fee = None
+        self.started = None
+        self._id = _id
+        self.base_size = None
+        self.base_price = None
+        self.status = 'pending'
+        self.changed = dict(
+            price = [],
+            size = []
+        )
+
+    def _update(self, price, size):
+        if not self.base_price:
+            self.base_price = price
+        size = (self.base_size - self.size) - size
+        if not size:
+            return
+        self.changed['price'] += [price]
+        self.changed['size'] += [size]
+        self.size = sum(v for v in self.changed['size'])
+        new_price = 0
+        dividende = 0
+        for i in range(len(self.changed['price'])):
+            if self.changed['size'][i] != 0:
+                new_price += self.changed['price'][i] * \
+                    (1/self.changed['size'][i])
+                dividende += 1/self.changed['size'][i]
+        if new_price != 0:
+            self.price = round(new_price/dividende, 2)
+
+    def __call__(self, price, side, size):
+        self.base_price = price
+        self.side = side
+        self.base_size = size
+        return self
+
+    def __repr__(self):
+        return "{}(id={}, side={}, price={}, size={}, fee={})".format(\
+            self.__class__.__name__,
+            self._id,
+            self.side,
+            self.price,
+            self.size,
+            self.fee)
+
 class orders:
 
     def __init__(self):
         self.orders = {}
         self._id = -1
 
-    def _create(self, price, size, side):
-        self.orders[str(self._id)] = dict(
-            price = 0,
-            size = 0,
-            side = side,
-            fee = 0,
-            base_size = float(size),
-            base_price = float(price),
-            status = 'pending',
-            _id = self._id,
-            changed = dict(
-                price = [],
-                size = []
-            )
-        )
-
     def _update(self, _id, price, size):
-        if not self.orders[str(_id)]['base_price']:
-            self.orders[str(_id)]['base_price'] = price
-        size = (self.orders[str(_id)]['base_size'] - self.orders[str(_id)]['size'])\
-             - size
-        if not size:
-            return
-        self.orders[str(_id)]['changed']['price'] += [price]
-        self.orders[str(_id)]['changed']['size'] += [size]
-        self.orders[str(_id)]['size'] = sum(v for v in self.orders[str(_id)]['changed']['size'])
-        new_price = 0
-        dividende = 0
-        for i in range(len(self.orders[str(_id)]['changed']['price'])):
-            if self.orders[str(_id)]['changed']['size'][i] != 0:
-                new_price += self.orders[str(_id)]['changed']['price'][i] * \
-                    (1/self.orders[str(_id)]['changed']['size'][i])
-                dividende += 1/self.orders[str(_id)]['changed']['size'][i]
-        if new_price != 0:
-            self.orders[str(_id)]['price'] = round(new_price/dividende, 2)
+        self.orders[str(_id)]._update(price, size)
 
     def _update_status(self, _id, status):
-        self.orders[str(_id)]['status'] = status
+        self.orders[str(_id)].status = status
 
     def __call__(self, price, size, side):
         self._id += 1
-        self._create(price, size, side)
-        return self.orders[str(self._id)]
+        self.orders[str(self._id)] = order(_id=self._id)
+        return self.orders[str(self._id)](price, side, size)
 
 class cbprowrapper:
 
@@ -158,10 +182,17 @@ class cbprowrapper:
             )
 
     def getBestPrice(self, bids, asks, order, side, id):
+        while True:
+            try:
+                best_bid = float(bids(0)[0][0]['price'])
+                best_ask = float(asks(0)[0][0]['price'])
+                break
+            except:
+                pass
         if side == "buy":
-            return round(float(bids(0)[0][0]['price']), 2), False, id
+            return round(best_bid, 2), False, id
         elif side == "sell":
-            return round(float(asks(0)[0][0]['price']), 2), False, id
+            return round(best_ask, 2), False, id
 
     def orderManagment(self, side, volume, allocated_funds=0, order=None, price=0):
         for i in range(len(self.ordernthreads)):

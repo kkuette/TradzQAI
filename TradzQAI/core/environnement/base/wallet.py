@@ -159,21 +159,14 @@ class Wallet(object):
         avg = 0
         i = 0
         while i < len(inventory):
-            if not api:
-                avg += inventory[i].open.price
-            else:
-                avg += inventory[i].open['price']
+            avg += inventory[i].open.price
             i += 1
         if i > 0:
             avg /= i
-            if not api:
-                side = inventory[0].open.side
-            else:
-                side = inventory[0].open['side']
-            if "sell" in side:
+            if "sell" in inventory[0].open.side:
                 self.settings['GL_pnl'] = (avg - price['buy']) * i * contract_settings['pip_value'] * contract_settings['contract_size'] + \
                     (self.calc_fees(avg * contract_settings['contract_size']) * i)
-            elif "buy" in side:
+            elif "buy" in inventory[0].open.side:
                 self.settings['GL_pnl'] = (price['sell'] - avg) * i * contract_settings['pip_value'] * contract_settings['contract_size'] + \
                     (self.calc_fees(avg * contract_settings['contract_size']) * i)
         else:
