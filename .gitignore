@@ -1,5 +1,7 @@
 *.pyc
 *.csv
 *.sh
-save/*
-config/*
+.vscode
+save/
+config/
+test*
