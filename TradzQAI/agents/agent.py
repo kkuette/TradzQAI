@@ -19,8 +19,7 @@ class Agent(object):
                     self.env.saver.model_file_name = self.env.model_name
                 if not os.path.exists(self.env.saver.model_directory+ "/model"):
                     os.mkdir(self.env.saver.model_directory+ "/model")
-                self.env.saver.model_file_path = self.env.saver.model_directory + "/model/" + self.env.saver.model_file_name
-
+                self.env.saver.model_file_path = self.env.saver.model_directory + "/model/"
             # Load agent from current config
             self.agent = Agents.from_spec(
                 self.env.settings['agent'],
@@ -33,8 +32,10 @@ class Agent(object):
             )
             # Load agent if it already exists
             try:
-                self.agent.restore_model(self.env.saver.model_directory+"/model")
+                self.agent.restore_model(self.env.saver.model_file_path)
+                print ("agent loaded")
             except:
+                print ("agent not loaded")
                 pass
         else:
             from .DEEP import DEEP
