@@ -1,11 +1,8 @@
 tensorflow-gpu
-PyQt5
-pyqtgraph
 pandas
 numpy==1.14.5
 h5py
-qdarkstyle
 tqdm
 deepdiff
-tensorforce[gpu]
+tensorforce
 websocket-client
