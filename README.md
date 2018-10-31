@@ -43,11 +43,9 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
 - Dependencies :
   - [Tensorflow](https://github.com/tensorflow/tensorflow)
   - [Tensorforce](https://github.com/reinforceio/tensorforce)
-  - [pyqtgraph](https://github.com/pyqtgraph/pyqtgraph)
   - [coinbasepro-python](https://github.com/danpaquin/coinbasepro-python)
   - Pandas
   - Numpy
-  - PyQt5
   - tqdm
   - h5py
 
@@ -59,7 +57,6 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   Usage:
     python run.py -h (Show usage)
     python run.py -b agent_name (to manually build config file, it build config files from agent, default PPO)
-    python run.py -g on (Display interface, it does not support live session)
     python run.py -s live (for live session) 
     python run.py -m eval (for eval mode)
     python run.py -c config_dir/ # load config from directory, make sure you have agent, env and network json files in it
@@ -71,12 +68,12 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   - Do you own decision function for maker side.
     For more info look at [this function](https://github.com/kkuette/TradzQAI/blob/master/API/api.py#L41)
     ```python
-        from core import Local_session as Session
-        from mymodule import myfunc
-        session = Session(mode=args.mode, config=args.config)
-        session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
-                product_id=product_id)
-        session.getApi().setBestPriceFunc(myfunc)
+    from core import Local_session as Session
+    from mymodule import myfunc
+    session = Session(mode=args.mode, config=args.config)
+    session.initApi(key=key, b64=b64, passphrase=passphrase, url=url,
+            product_id=product_id)
+    session.getApi().setBestPriceFunc(myfunc)
      ```
 
   - Do your own runner.
@@ -93,7 +90,7 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
   for e in episode:
     state = env.reset()
     for s in step:
-      action = agent.act(state, ...)
+      action = agent.act(state)
       next_state, terminal, reward = env.execute(action)
       agent.observe(reward, terminal)
       if terminal or env.stop:
@@ -135,6 +132,9 @@ More datasets available [here](http://www.histdata.com/download-free-forex-data/
             {"activation": "relu", "size": 64, "type": "dense"}
         ]
         ```
+  - Also TradzQAI support pre trained keras model:
+    - You can build settings for your model by using ```py run.py -b DEEP```.
+    Your model have to be placed in the same directory as the one you use to launch it and have to be called ```deep_model.h5```.
 
         
 
