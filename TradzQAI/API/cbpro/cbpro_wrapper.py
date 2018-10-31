@@ -19,7 +19,7 @@ class order:
         self.price = 0
         self.side = None
         self.size = 0
-        self.fee = None
+        self.fee = 0
         self.started = None
         self._id = _id
         self.base_size = None
