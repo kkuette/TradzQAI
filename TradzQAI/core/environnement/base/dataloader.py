@@ -40,7 +40,7 @@ class dataLoader:
         self.dat = None
         self.logger = None
         self.data_max_len = 100
-        self.files_index = 0
+        self.files_index = -1
         self.file_month_index = 0
         self.files_month = []
         self.cmonth = []
@@ -66,7 +66,7 @@ class dataLoader:
                 directory: (str) Data location path
         '''
         self.files = []
-        self.files_count = -1
+        self.files_count = 0
         self.directory = directory
         if not os.path.exists(self.directory):
             raise ValueError("%s does not exist" % directory)
@@ -166,11 +166,6 @@ class dataLoader:
         return vec, row, time
 
     def loadFile(self):
-        if self.files_index > self.files_count:
-            self.data.append(None)
-            self.raw.append(None)
-            self.time.append(None)
-            return
         if self.time_mode == 'daily':
             tmp_data, tmp_raw, tmp_time = self.getStockDataVec(self.files[self.files_index])
             if self.logger:
@@ -234,7 +229,7 @@ class dataLoader:
         for tick in historical:
             tick[0] = datetime.fromtimestamp(tick[0]).strftime("%Y%m%d%H%M%S")
             ticks.append([tick[0], tick[4], tick[5]])
-        ticks = self.formatTo1M(pd.DataFrame(ticks, columns=self.columns))
+        ticks = self.formatTo15M(pd.DataFrame(ticks, columns=self.columns))
         tick = (ticks.iloc[-self.data_max_len:]).reset_index(drop=True)
         self.raw_ticks = tick
         self.ticks = tick.join(self.indics.build_indicators(tick['Price']))
@@ -302,6 +297,25 @@ class dataLoader:
                     tmp_f.append(tmp_a)
                     volume = 0
             #tqdm.write(str(tmp_f[len(tmp_f) - 1]))
+            volume += data['Volume'].iloc[i]
+            tmp_d = int(str(data['Time'].iloc[i])[10:12])
+        return (pd.DataFrame(tmp_f, columns=data.columns)).reset_index(drop=True)
+
+    def formatTo15M(self, data):
+        tmp_f = []
+        tmp_d = 0
+        volume = 0
+        for i in tqdm(range(len(data['Time'])), desc = "Formating : "):
+            c_tmp = int(str(data['Time'].iloc[i])[10:12])
+            if c_tmp == 0 or c_tmp == 15 or c_tmp == 30 or c_tmp == 45:
+                tmp_a = []
+                for c in data.columns:
+                    if c == 'Volume':
+                        tmp_a.append(volume)
+                    else:
+                        tmp_a.append(data[c].iloc[i])
+                tmp_f.append(tmp_a)
+                volume = 0
             volume += data['Volume'].iloc[i]
             tmp_d = int(str(data['Time'].iloc[i])[10:12])
         return (pd.DataFrame(tmp_f, columns=data.columns)).reset_index(drop=True)

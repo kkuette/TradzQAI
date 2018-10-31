@@ -30,8 +30,6 @@ class Reward:
     def add_reward(self, reward):
         self.current = reward
         self.daily.append(reward)
-        self.episode.append(reward)
-        self.total.append(reward)
 
     def get_daily_reward(self):
         return np.sum(self.daily)
@@ -44,9 +42,11 @@ class Reward:
 
     def daily_reset(self):
         self.current = 0
+        self.episode.append(np.sum(self.daily))
         self.daily = []
-
+        
     def episode_reset(self):
+        self.total.append(np.sum(self.episode))
         self.episode = []
 
     def reset(self):
@@ -62,9 +62,9 @@ class Reward:
     def unrealized_pnl_sma(self):
         if self.call_id > 0:
             if self.call_id > self.period:
-                return np.average(self.total[self.call_id-self.period:])
+                return np.average(self.daily[self.call_id-self.period:])
             else:
-                return np.average(self.total)
+                return np.average(self.daily)
         else:
             return self.current
 

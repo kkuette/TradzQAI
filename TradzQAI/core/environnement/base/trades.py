@@ -48,7 +48,7 @@ class trade:
                 r = (self.open.price * self.open.size) - \
                     (self.close.price * self.close.size)
             else:
-                r = (self.close.price - self.close.size) - \
+                r = (self.close.price * self.close.size) - \
                     (self.open.price * self.open.size)
             self.pnl = r + self.fees
 

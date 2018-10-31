@@ -21,6 +21,8 @@ class Local_Worker:
             step.set_description(desc="%s " % d[len(d) - 1], refresh=True)
             step.update(1)
             self.step()
+            if self.env.mode == "train":
+                self.agent.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
             self.env.nextDataset()
             if self.env.stop:
                 break
@@ -53,7 +55,5 @@ class Local_Worker:
             if e == self.env.episode_count - 1:
                 self.env.next = True
             if self.agent.should_stop() or self.env.stop:
-                if terminal and self.env.mode == "train":
-                    self.agent.save_model(directory=self.env.saver.model_file_path, append_timestep=True)
                 ep.close()
                 break

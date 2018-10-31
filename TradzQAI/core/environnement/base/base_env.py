@@ -95,7 +95,6 @@ class Environnement:
         return network
 
     def get_settings(self, env):
-        env['base'].pop('data_directory')
         self.episode_count = env['base']['episodes']
         self.t_return = env['base']['targeted_return']
         self.contract_type = env['contract']['contract_type']
@@ -252,6 +251,7 @@ class Environnement:
     def daily_processing(self, terminal):
         if self.manage_date() == 1 or terminal is True:
             self.wallet.episode_process()
+            '''
             if self.wallet.pnl['percent'] > self.t_return and (self.inventory.trades.loose + self.inventory.trades.win + self.inventory.trades.draw) > 10:
                 with open("training_data/train_in.txt", "a") as f:
                     for dd in self.train_in:
@@ -259,12 +259,13 @@ class Environnement:
                 with open("training_data/train_out.txt", "a") as f:
                     for row in self.train_out:
                         f.write(str(row)+'\n')
+            '''
             self.daily_reset()
 
     def avg_reward(self, reward, n):
         if n == 0:
             return np.average(np.array(reward))
-        return np.average(np.array(reward[-n:]))
+        return np.average(np.array(reward[len(reward)-(n+1):]))
 
     def eval_processing(self):
         self.event.set()
@@ -317,6 +318,7 @@ class Environnement:
     def episode_process(self):
         self.event.set()
         self.wallet.historic_process()
+        
 
         h_tmp = dict(
             total_profit = round(self.wallet.pnl['total'], 3),
@@ -330,8 +332,13 @@ class Environnement:
         )
 
         self.logger._add("######################################################", self._name)
-        self.logger._add("Total reward : " + str(round(np.sum(self.reward.total), 3)), self._name)
-        self.logger._add("Average daily reward : " + str('{:.3f}'.format(self.avg_reward(self.reward.total, 0))), self._name)
+        self.logger._add("Total reward : " + str(round(np.sum(self.reward.episode), 3)), self._name)
+        self.reward.episode_reset()
+        self.logger._add("Average reward : " + str('{:.3f}'.format(self.avg_reward(self.reward.total, 0))), self._name)
+        self.logger._add("Avg reward 500 : " + str(round(self.avg_reward(self.reward.total, 500), 3)), self._name)
+        self.logger._add("Avg reward 100 : " + str(round(self.avg_reward(self.reward.total, 100), 3)), self._name)
+        self.logger._add("Avg reward 50 : " + str(round(self.avg_reward(self.reward.total, 50), 3)), self._name)
+        self.logger._add("Avg reward 10 : " + str(round(self.avg_reward(self.reward.total, 10), 3)), self._name)
         self.logger._add("Total profit : " + str(round(self.wallet.pnl['total'], 3)), self._name)
         self.logger._add("Total trade : " + str(self.inventory.trades.loose + self.inventory.trades.win + self.inventory.trades.draw), self._name)
         '''

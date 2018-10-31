@@ -15,6 +15,7 @@ class Live_Worker:
         if "eval" == self.env.mode:
             self.determinitic = True
         self.is_working = False
+        self.changed = False
 
     def close(self):
         self.is_working = False
@@ -23,16 +24,13 @@ class Live_Worker:
         self.agent.reset()
         state = self.env.reset()
         self.is_working = True
-        current_time = datetime.now().minute
-        current_day = datetime.now().day
         while self.is_working:
-            if current_time != datetime.now().minute:
-                current_time = datetime.now().minute
+            if datetime.now().minute % 15 != 0:
+                changed = False
+            if datetime.now().minute % 15 == 0 and not changed:
+                changed = True
                 action = self.agent.act(state, deterministic=self.deterministic)
                 state, terminal, reward = self.env.execute(action)
-                if datetime.now().day != current_day:
-                    terminal = True
-                    self.env.episode_process()
                 if "train" == self.env.mode:
                     self.agent.observe(reward=reward, terminal=terminal)
                 if terminal and self.env.mode == "train":

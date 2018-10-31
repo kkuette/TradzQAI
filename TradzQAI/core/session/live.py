@@ -30,7 +30,6 @@ class Live_session(Thread):
 
         if self.saver.check_settings_files(config):
             self.settings['env'], self.settings['agent'], self.settings['network'] = self.saver.load_settings(config)
-            self.saver._check(self.settings['agent']['type'].split('_')[0].upper(), self.settings)
             self.logger = Logger()
         else:
             self.initEnv()
@@ -115,6 +114,8 @@ class Live_session(Thread):
             passphrase=passphrase, url=url, product_id=product_id, mode=mode,
             auto_cancel=auto_cancel)  
         self.dl = dataLoader(mode=self.mode, api=self.api)
+        del self.settings['env']['base']['data_directory']
+        self.saver._check(self.settings['agent']['type'].split('_')[0].upper(), self.settings)
         self.initEnv()
 
     def initEnv(self):

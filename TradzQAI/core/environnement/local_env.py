@@ -68,7 +68,7 @@ class Local_env(Environnement):
                 period=config['env']['reward']['period'])
 
             self.inventory = Inventory(wallet=self.wallet, price=self.price,
-                reward=self.reward, contract_settings=config['env']['contract'])
+                reward=self.reward, contract_settings=self.contract_settings)
 
             self._state = state(config['env']['states']['window'],
                 preprocessing=config['env']['states']['preprocessing'],
@@ -112,8 +112,6 @@ class Local_env(Environnement):
 
     def close(self):
         self.stop = True
-        if self.logger:
-            self.logger.stop()
         self.event.set()
 
     def nextDataset(self):
@@ -186,24 +184,25 @@ class Local_env(Environnement):
             if self.is_crypto:
                 self.contract_settings['contract_size'] = self.wallet.manage_contract_size(self.contract_settings)
         self.price['buy'], self.price['sell'] = self.contracts.calcBidnAsk(self.data[self.current_step['step']])
-        self.wallet.manage_exposure(self.contract_settings)
-        
+        self.wallet.manage_exposure(self.contract_settings)        
         self.inventory(self.step_left, action)
-        self.reward(u_pnl=self.wallet.get_current_unrealized_pnl())
+        #self.reward(u_pnl=self.wallet.get_current_unrealized_pnl())
         self.wallet.manage_wallet(self.inventory.current_trades, self.price,
                             self.contract_settings)
+        
         if len(self.inventory.current_trades) == 0:
             self.pos_delay['current'] += 1
         if self.current_step['step'] > 0:
             self.contract_settings['contract_price'] = self.contracts.getContractPrice(self.data[self.current_step['step']])
             if self.is_crypto:
                 self.contract_settings['contract_size'] = self.wallet.manage_contract_size(self.contract_settings)
-        
+        '''
         self.train_out.append(act_processing(self.action))
         if self.input_names:
             self.train_in.append([v for k,v in self.state.items()])
         else:
             self.train_in.append(self.state)
+        '''
         
         self.wallet.pnl['daily'] += self.wallet.pnl['current']
         self.wallet.pnl['total'] += self.wallet.pnl['current']
@@ -223,6 +222,7 @@ class Local_env(Environnement):
 
     def daily_reset(self):
         self.wallet.daily_reset()
+        self.reward.daily_reset()
     
         self.train_in = []
         self.train_out = []
@@ -246,7 +246,6 @@ class Local_env(Environnement):
         self.start = 0
         self.switch = 0
 
-        self.daily_reset()
         self.wallet.reset()
         self.inventory.reset()
         self._state.reset()

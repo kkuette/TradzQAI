@@ -1,6 +1,8 @@
 from .trades import trades
 from .orders import orders
 
+from tqdm import tqdm
+
 class Inventory:
 
     def __init__(self, wallet=None, price=None, reward=None, 
@@ -70,6 +72,7 @@ class Inventory:
             # reset strat
             if len(self.current_trades) == 0:
                 self.current_strat = 'hold'
+        
 
     def invert_side(self):
         if self.current_strat == 'buy':

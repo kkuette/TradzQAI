@@ -28,9 +28,10 @@ class Local_session(Thread):
 
         if self.saver.check_settings_files(config):
             self.settings['env'], self.settings['agent'], self.settings['network'] = self.saver.load_settings(config)
-            self.saver._check(self.settings['agent']['type'].split('_')[0].upper(), self.settings)
             self.logger = Logger()
             self.dl = dataLoader(directory=self.settings['env']['base']['data_directory'], mode=self.mode)
+            #self.settings['env']['base'].pop('data_directory')
+            self.saver._check(self.settings['agent']['type'].split('_')[0].upper(), self.settings)
         else:
             self.initEnv()
             default_env, default_network = self.env.get_default_settings()
