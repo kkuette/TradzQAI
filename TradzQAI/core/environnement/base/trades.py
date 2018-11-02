@@ -37,6 +37,7 @@ class trade:
         self._id = _id
         self.pnl = 0
         self.fees = 0
+        self.remaining_size = 0
 
     def __call__(self, order):
         if not self.open:
@@ -45,12 +46,11 @@ class trade:
             self.close = order
             self.fees = self.open.fee + self.close.fee
             if self.open.side == 'sell':
-                r = (self.open.price * self.open.size) - \
-                    (self.close.price * self.close.size)
+                r = (self.open.price - self.close.price) * self.close.size
             else:
-                r = (self.close.price * self.close.size) - \
-                    (self.open.price * self.open.size)
+                r = (self.close.price - self.open.price) * self.close.size
             self.pnl = r + self.fees
+            self.remaining_size = self.open.size - self.close.size
 
     def __repr__(self):
         return "{}(id={}, open={}, close={}, pnl={}, fees={})".format(

@@ -17,7 +17,7 @@ class state:
             return: When called
                 state: (array)
         '''
-        self.window = window
+        self.window = window + 1
         self.mode = mode
         
         if not hasattr(TradzQAI.tools, preprocessing):
@@ -48,7 +48,7 @@ class state:
             if ("Price" or "EMA") in col:
                 res.append(self.preprocessing(block[i + 1] - block[i]))
             else:
-                res.append(block[i])
+                res.append(block[i + 1])
         return np.array(res)
 
     def getState(self, data):
@@ -92,5 +92,5 @@ class state:
         if self.mode == 'local':
             self.index += 1
         else:
-            self.index = data_len-self.window + 1
+            self.index = data_len - 1
         return self.getState(data)
