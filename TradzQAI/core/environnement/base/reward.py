@@ -46,11 +46,11 @@ class Reward:
         self.daily = []
         
     def episode_reset(self):
+        self.call_id = -1
         self.total.append(np.sum(self.episode))
         self.episode = []
 
     def reset(self):
-        self.call_id = -1
         self.total = []
 
     def pnl(self):
@@ -72,12 +72,12 @@ class Reward:
         return max(0, reward)
 
     def __call__(self, u_pnl=None, pnl=None):
-        if 'pnl' == self.func.__name__ and pnl:
+        if 'pnl' == self.func.__name__ and pnl is not None:
             if self.no_neg:
                 self.add_reward(self.no_negative(pnl))
             else:
                 self.add_reward(pnl)
-        elif 'pnl' != self.func.__name__ and u_pnl:
+        elif 'pnl' != self.func.__name__ and u_pnl is not None:
             if self.no_neg:
                 self.add_reward(self.no_negative(u_pnl))
             else:
