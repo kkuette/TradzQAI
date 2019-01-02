@@ -45,10 +45,10 @@ class state:
             [-d * [tmp[0]]] + [tmp[0:self.index + 1]])
         res = []
         for i in range(self.window - 1):
-            if ("Price" or "EMA") in col:
-                res.append(self.preprocessing(block[i + 1] - block[i]))
+            if ("Price" or "EMA" or "Volume") in col:
+                res.append(self.preprocessing([block[i + 1] - block[i]]))
             else:
-                res.append(block[i + 1])
+                res.append([block[i + 1]])
         return np.array(res)
 
     def getState(self, data):
