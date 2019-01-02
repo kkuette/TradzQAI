@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 
 from tqdm import tqdm
 tqdm.monitor_interval = 0
@@ -26,19 +27,18 @@ class Live_Worker:
         self.is_working = True
         while self.is_working:
             if datetime.now().minute % 15 != 0:
-                changed = False
-            if datetime.now().minute % 15 == 0 and not changed:
-                changed = True
+                self.changed = False
+            if datetime.now().minute % 15 == 0 and not self.changed:
+                self.changed = True
                 action = self.agent.act(state, deterministic=self.deterministic)
                 state, terminal, reward = self.env.execute(action)
+                #print (state)
                 if "train" == self.env.mode:
                     self.agent.observe(reward=reward, terminal=terminal)
                 if terminal and self.env.mode == "train":
                     self.agent.save_model(directory=self.env.saver.model_file_path,
                         append_timestep=True)
-                if terminal:
-                    self.agent.reset()
-                    state = self.env.reset()
                 if self.agent.should_stop() or self.env.stop:
                     break
+            time.sleep(1)
 
