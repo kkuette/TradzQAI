@@ -81,10 +81,20 @@ class Api(object):
     def getTicks(self):
         return self._api.getTicks()
 
-    def buy(self, size, allocated_funds):
+    def get_best_bid_and_ask(self):
+        while True:
+            try:
+                best_bid = float(self._api.last_bids(0)[0][0]['price'])
+                best_ask = float(self._api.last_asks(0)[0][0]['price'])
+                break
+            except:
+                pass
+        return best_bid, best_ask
+
+    def buy(self, size, allocated_funds=0):
         return self._api.addOrder("buy", size, allocated_funds)
 
-    def sell(self, size, allocated_funds):
+    def sell(self, size, allocated_funds=0):
         return self._api.addOrder("sell", size, allocated_funds)
 
     def close(self):
