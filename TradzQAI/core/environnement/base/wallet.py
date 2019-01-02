@@ -33,6 +33,8 @@ class Wallet(object):
             GL_pnl = 0
         )
 
+        self.product_wallet = 0
+
         self.historic = dict(
             mean_return = [],
             sharp_ratio = [],
@@ -179,7 +181,7 @@ class Wallet(object):
             self.settings['used_margin'] = 0
         self.unrealized_pnl.append(self.settings['GL_pnl'])
 
-    def manage_exposure(self, contract_settings):
+    def manage_exposure(self, contract_settings, api=False):
         self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
         try:
             max_order_valid = self.risk_managment['capital_exposure'] // (contract_settings['contract_size'] * (contract_settings['contract_price'] * contract_settings['pip_value']))
@@ -195,12 +197,12 @@ class Wallet(object):
                 self.risk_managment['max_order_size'] = int(max_order_valid // self.risk_managment['max_pos'])
             else:
                 self.risk_managment['max_order_size'] = 1
-        if self.risk_managment['current_max_pos'] < 1 and self.firstCheck:
+        if self.risk_managment['current_max_pos'] < 1 and self.firstCheck and not api:
             raise ValueError('current_max_pos : {:.3f} We cant afford any contract. Please check wallet settings.'.format(self.risk_managment['current_max_pos']))
         else:
             self.firstCheck = False
 
-    def manage_contract_size(self, contract_settings):
+    def manage_contract_size(self, contract_settings, api=False):
         self.risk_managment['capital_exposure'] = self.settings['capital'] - (self.settings['capital'] * (1 - (self.risk_managment['exposure'] / 100)))
         size = self.risk_managment['capital_exposure'] / (contract_settings['contract_price'] * contract_settings['pip_value'])
         idx = self.risk_managment['max_pos']
@@ -210,7 +212,7 @@ class Wallet(object):
             idx = int(idx * (1-size))
             tmp_size = size / idx
         size = float(Decimal(str(tmp_size)).quantize(Decimal('.0000001'), rounding=ROUND_DOWN))
-        if (size < self.min_size or idx < 1) and self.firstCheck:
+        if (size < self.min_size or idx < 1) and self.firstCheck and not api:
             raise ValueError("Your contract size {:.4f} is too small, or you cannot afford any contract max pos : {}. Please check your settings".format(size, idx))
         #elif size < 1.0:
             #return size
