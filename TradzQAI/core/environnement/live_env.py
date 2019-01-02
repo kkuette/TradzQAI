@@ -30,6 +30,7 @@ class Live_env(Environnement):
 
         self.crypto = ['BTC', 'LTC', 'BCH', 'ETH']
         self.is_crypto = False
+        self.traded_currency = 'BTC'
 
         self.settings = config
         self.dl = dataloader
@@ -62,14 +63,17 @@ class Live_env(Environnement):
                 raise ValueError("Contract type does not exist")
             self.api.start()
             self.api.setMaxOrders(self.wallet.risk_managment['max_pos'])
-            acc = self.api.getAccount()
+            acc = self.api.getAccounts()
             if not 'message' in acc:
-                self.wallet.settings['capital'] = float(acc['available'])
-                self.wallet.init_default()
-                self._api = True
+                for account in acc:
+                    if account['currency'] == 'EUR':
+                        self.wallet.settings['capital'] = float(account['available'])
+                        self.wallet.init_default()
+                    elif account['currency'] == self.traded_currency:
+                        self.wallet.product_wallet = float(account['available'])
             else:
                 print ("Client not connected")
-
+            #print (self.wallet.settings)
             self.get_input_names(config['network'])
             if len(self.input_names) == 0:
                 self.input_names = None
@@ -79,7 +83,7 @@ class Live_env(Environnement):
                 period=config['env']['reward']['period'])
 
             self.inventory = Inventory(wallet=self.wallet, price=self.price,
-                reward=self.reward, contract_settings=config['env']['contract'],
+                reward=self.reward, contract_settings=self.contract_settings,
                 api=self.api)
 
             self.model_name = config['agent']['type'].split('_')[0].upper()
@@ -189,15 +193,48 @@ class Live_env(Environnement):
         self.action = action
         if self.step_left == 0:
             self.check_time_before_closing()
-        self.step_left -= 1
+
         self.wallet.pnl['current'] = 0
-        if self.current_step['step'] == 0:
-            self.contract_settings['contract_price'] = self.contracts.getContractPrice(float(self.data.iloc[-1]))
-            if self.is_crypto:
-                self.contract_settings['contract_size'] = self.wallet.manage_contract_size(self.contract_settings)
-        self.price['buy'], self.price['sell'] = self.contracts.calcBidnAsk(self.data[self.current_step['step']])
-    
-        self.wallet.manage_exposure(self.contract_settings)
+        if self.inventory.current_strat == 'buy' and len(self.inventory.current_trades) > 0 \
+            and self.inventory.current_trades[0].close:
+            self.wallet.pnl['current'] = self.inventory.current_trades[0].pnl
+            self.inventory.current_trades.pop(0)
+            if len(self.inventory.current_trades) == 0:
+                self.inventory.current_strat = 'hold'
+        elif self.inventory.current_strat == 'buy' and len(self.inventory.current_trades) > 0 and \
+            self.inventory.current_trades[0].open.price == 0:
+            self.inventory.current_trades.pop(0)
+            if len(self.inventory.current_trades) == 0:
+                self.inventory.current_strat = 'hold'
+
+        acc = self.api.getAccounts()
+        if not 'message' in acc:
+            for account in acc:
+                if account['currency'] == 'EUR':
+                    self.wallet.settings['capital'] = float(account['available'])
+                    self.wallet.init_default()
+                elif account['currency'] == self.traded_currency:
+                    self.wallet.product_wallet = float(account['available'])
+        else:
+            print ("Client not connected")
+        
+        #self.contract_settings['contract_price'] = self.api.get_best_bid_and_ask()#self.contracts.getContractPrice(float(self.data.iloc[-1]))
+        
+        self.price['buy'], self.price['sell'] = self.api.get_best_bid_and_ask()
+        self.contract_settings['contract_price'] = self.price['buy']
+        if self.is_crypto:
+            self.contract_settings['contract_size'] = self.wallet.manage_contract_size(self.contract_settings, api=True)
+        if len(self.inventory.current_trades) == 0 and self.wallet.product_wallet > 0.001:
+            self.inventory.trades()(self.inventory.orders(self.price['buy'], 'buy', self.wallet.product_wallet, 0))
+            self.inventory.current_trades.append(self.inventory.trades.current)
+            self.inventory.current_strat = 'buy'
+        self.wallet.manage_exposure(self.contract_settings, api=True)
+        
+        print (self.wallet.settings)
+        print (self.contract_settings)
+        print (self.wallet.risk_managment)
+        print ((self.wallet.product_wallet, action))
+        print (self.inventory.current_trades)
         
         self.inventory(self.step_left, action)
         self.reward(u_pnl=self.wallet.get_current_unrealized_pnl())
@@ -205,16 +242,13 @@ class Live_env(Environnement):
                             self.contract_settings, api=True)
         if len(self.inventory.current_trades) == 0:
             self.pos_delay['current'] += 1
-        if self.current_step['step'] > 0:
-            self.contract_settings['contract_price'] = self.contracts.getContractPrice(float(self.data.iloc[-1]))
-            if self.is_crypto:
-                self.contract_settings['contract_size'] = self.wallet.manage_contract_size(self.contract_settings)
-        
+        '''
         self.train_out.append(act_processing(self.action))
         if self.input_names:
             self.train_in.append([v for k,v in self.state.items()])
         else:
             self.train_in.append(self.state)
+        '''
         
         self.wallet.pnl['daily'] += self.wallet.pnl['current']
         self.wallet.pnl['total'] += self.wallet.pnl['current']
@@ -222,12 +256,14 @@ class Live_env(Environnement):
         self.state = self._state(self.raw, data_len=self.len_data)
         self.wallet.daily_process()
         done = True if self.len_data - 1 == self.current_step['step'] else False
-           
+
         if self.wallet.risk_managment['current_max_pos'] < 1:
             done = True
+        '''
         self.daily_processing(done)
         if done:
             self.episode_process()
+        '''
         if self.settings['agent']['type'] == 'DEEP':
             self.state = np.array([self.state.ravel()])
         return self.state, done, self.reward.current
@@ -240,7 +276,7 @@ class Live_env(Environnement):
 
     def reset(self):
         self.tensorOCHL = [[] for _ in range(4)]
-        self.step_left = 0
+        self.step_left = 20000
         self.lst_data_full = deque(maxlen=100)
         self.date['day'] = 1
         self.date['month'] = 1
