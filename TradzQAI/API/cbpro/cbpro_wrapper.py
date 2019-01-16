@@ -227,6 +227,12 @@ class cbprowrapper:
                 self.bpfunc(self.last_bids, self.last_asks,
                     self.ordernthreads[cthread]['manager'].order,
                     self.ordernthreads[cthread]['side'], _id)
+            if self.ordernthreads[cthread]['manager'].order:
+                if self.ordernthreads[cthread]['manager'].order[0]:
+                    time.sleep(2)
+                    if self.checkChanges(self.ordernthreads[cthread]):
+                        if self.checkFills(self.ordernthreads[cthread]):
+                            cancel = True
             if self.ordernthreads[cthread]['manager'].no_funds and not passed:
                 cancel = True
             elif self.ordernthreads[cthread]['manager'].no_funds and passed:
@@ -242,20 +248,19 @@ class cbprowrapper:
                     havetoopen = True
                     self.ordernthreads[cthread]['manager'].rejected = False
                 if havetoopen:
-                    
                     self.no_thread_used = False
                     self.unused_manager = 0
                     self.ordernthreads[cthread]['manager'].cleanOrders()
-                    time.sleep(1)
+                    time.sleep(0.4)
                     havetoopen = False
                     open_func()
-                    time.sleep(1)
+                    time.sleep(0.4)
                 elif self.ordernthreads[cthread]['is_busy'] and self.is_running:
                     self.unused_manager += 1
                     self.managerSelector()
                 self.ordernthreads[cthread]['event'].clear()
             else:
-                print ("Canceled at %s" % str(datetime.now()))
+                #print ("Canceled at %s" % str(datetime.now()))
                 self.orders._update_status(self.ordernthreads[cthread]['manager'].orders._id, 'canceled')
                 self.ordernthreads[cthread]['is_busy'] = False
             '''
@@ -329,43 +334,36 @@ class cbprowrapper:
     def closeManager(self, _id):
         self.ordernthreads[_id]['is_busy'] = False
 
-    def checkFills(self):
+    def checkFills(self, othread):
         fills = self.orderbook.getUserFills()
-        if fills and self.oncthread > 0:
+        if fills:
             for idx in range(len(fills)):
-                for i in range(len(self.ordernthreads)):
-                    if self.ordernthreads[i]['is_busy']:
-                        if self.ordernthreads[i]['manager'].order[0]['id'] == \
-                            fills[idx]:
-                            print ("Filled at %s" % str(datetime.now()))
-                            self.ordernthreads[i]['is_busy'] = False
-                            self.ordernthreads[i]['event'].set()
-                            self.orders._update_status(self.ordernthreads[i]['manager'].orders._id, 
-                                'filled')
-                            break
+                if othread['manager'].order[0]['id'] == fills[idx]:
+                    #print ("Filled at %s" % str(datetime.now()))
+                    self.orders._update_status(othread['manager'].orders._id, 
+                        'filled')
+                    return True
             self.orderbook.DeleteFill(len(fills))
+        return False
 
-    def checkChanges(self):
+    def checkChanges(self, othread):
         changes = self.orderbook.getUserOrderChange()
-        if changes and self.oncthread > 0:
+        if changes:
             for idx in range(len(changes)):
-                for i in range(len(self.ordernthreads)):
-                    if self.ordernthreads[i]['is_busy']:
-                        if self.ordernthreads[i]['manager'].order[0]['id'] == \
-                            changes[idx][0]:
-                            self.ordernthreads[i]['manager'].size -= float(changes[idx][1])
-                            self.orders._update(self.ordernthreads[i]['manager'].orders._id,
-                                float(self.ordernthreads[i]['manager'].order[0]['price']),
-                                float(changes[idx][1]))
-                            self.ordernthreads[i]['manager'].allocated_funds = round(self.ordernthreads[i]['manager'].size, 7) * self.ordernthreads[i]['manager'].price
-                            if self.ordernthreads[i]['manager'].size < 0.001 and \
-                                self.ordernthreads[i]['manager'].size > 0.0:
-                                self.orders._update_status(self.ordernthreads[i]['manager'].orders._id, 
-                                'canceled')
-                                self.ordernthreads[i]['is_busy'] = False
-                                self.ordernthreads[i]['event'].set()
-                            break
+                if othread['manager'].order[0]['id'] == changes[idx][0]:
+                    othread['manager'].size = round(othread['manager'].size - float(changes[idx][1]), 7) - 0.0000001
+                    self.orders._update(othread['manager'].orders._id,
+                        float(othread['manager'].order[0]['price']),
+                        float(changes[idx][1]))
+                    if othread['side'] == 'buy':
+                        othread['manager'].allocated_funds = round(float(othread['manager'].order[0]['price']), 7) * othread['manager'].size
+                    if othread['manager'].size < 0.001:
+                        self.orders._update_status(othread['manager'].orders._id, 
+                            'canceled')
+                        return True
+                    break
             self.orderbook.DeleteChange(len(changes))
+        return False
 
     def runOrderBook(self):
         while self.is_running:
@@ -382,8 +380,8 @@ class cbprowrapper:
         while self.is_running:
             if self.orderbook:
                 self.event.wait()
-                self.checkChanges()
-                self.checkFills()
+                #self.checkChanges()
+                #self.checkFills()
                 if (time.time()-self.requestTime) >= (1/self.maxRequestPerSec)*2\
                         or self.no_thread_used:
                     self.requestTime = time.time()
@@ -397,7 +395,6 @@ class cbprowrapper:
         self.event.set()
         self.orderbook.stop = True
 
-
     def run(self):
         self.is_running = True
         if self.authClient:
@@ -405,7 +402,7 @@ class cbprowrapper:
             self.buildNthread(n=self.maxthreads)
             for order in self.authClient.get_orders():
                 if not 'message' in order:
-                    self.orderManagment(order['side'], order['size'], 
+                    self.orderManagment(order['side'], float(order['size']), 
                         float(order['price']) * float(order['size']), order=order, 
                         price=order['price'])
         Thread(target=self.runOrderBook, daemon=True).start()
@@ -665,7 +662,7 @@ class threadsManager(object):
         cthread = self.lasts_thread
         p = self.bp
         self.price = p
-        self.calc_size()
+        #self.calc_size()
         if self.no_funds:
             return
         m = self.authClient.sell(price=p,
