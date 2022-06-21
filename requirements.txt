@@ -1,6 +1,6 @@
 tensorflow-gpu
 pandas
-numpy==1.14.5
+numpy==1.22.0
 h5py
 tqdm
 deepdiff
